@@ -1,5 +1,21 @@
 # /usr/bin/python3
+
+#Used for command line argument parsing
 import sys
+
+#Our algorithms
+import fcfs
+import rr
+import sjf
+import srt
+
+
+
+def main(seed, lambdaED, upperBound, n, tCS, alpha, timeSlice, rrBeginning):
+    sjf.main()
+    srt.main()
+    fcfs.main(seed, upperBound, n, tCS)
+    rr.main()
 
 '''
 Parse arguments
@@ -83,3 +99,5 @@ if __name__ == '__main__':
         else:
             print("Invalid queue arrival for Round Robin check argument 9 (BEGGINING/END)")
             sys.exit()
+    
+    main(seed, lambdaED, upperBound, n, tCS, alpha, timeSlice, rrBeginning)
