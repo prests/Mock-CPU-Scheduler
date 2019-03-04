@@ -1,4 +1,4 @@
 # /usr/bin/python3
 
-def main():
-    print("srt")
+def main(seed, lambdaED, upperBound, n, tCS, alpha):
+    print("Algorithm SRT")

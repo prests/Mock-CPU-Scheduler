@@ -1,4 +1,4 @@
 # /usr/bin/python3
 
 def main(seed, upperBound, n, tCS):
-    print("fcfs")
+    print("Algorithm FCFS")

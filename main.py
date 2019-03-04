@@ -12,10 +12,10 @@ import srt
 
 
 def main(seed, lambdaED, upperBound, n, tCS, alpha, timeSlice, rrBeginning):
-    sjf.main()
-    srt.main()
+    sjf.main(seed, lambdaED, upperBound, n, tCS, alpha)
+    srt.main(seed, lambdaED, upperBound, n, tCS, alpha)
     fcfs.main(seed, upperBound, n, tCS)
-    rr.main()
+    rr.main(seed, upperBound, n, timeSlice, rrBeginning)
 
 '''
 Parse arguments

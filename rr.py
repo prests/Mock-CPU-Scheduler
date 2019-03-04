@@ -1,4 +1,4 @@
 # /usr/bin/python3
 
-def main():
-    print("rr")
+def main(seed, upperBound, n, timeSlice, rrBeginning):
+    print("Algorithm RR")

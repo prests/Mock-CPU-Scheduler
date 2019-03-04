@@ -1,4 +1,4 @@
 # /usr/bin/python3
 
-def main():
-    print("sjf")
+def main(seed, lambdaED, upperBound, n, tCS, alpha):
+    print("Algorithm SJF")
