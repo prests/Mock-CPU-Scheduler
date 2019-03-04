@@ -19,4 +19,4 @@ python3 main.py s lamda uB n tCS alpha tS rr
 * tCS - Time (milliseconds) to perform a context switch
 * alpha - Constant used in exponential averaging
 * tS - Time slice for a process in Round Robin algorithm
-* rr - Determine if processes are added to beginning or end of queue on arrivale (BEGINNING/END with END being default)
+* rr - [OPTIONAL] Determine if processes are added to beginning or end of queue on arrivale (BEGINNING/END with END being default)
