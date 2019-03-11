@@ -1,5 +1,15 @@
 # /usr/bin/python3
 
+'''
+    48-bit linear congurential generator
+
+    how to use in another file:
+        import rand48
+
+        r = rand48.rand48(0) <-- initialize class
+        r.srand48(seed) <-- set seed
+        r.drand() <-- get next value
+'''
 class Rand48(object):
     def __init__(self, seed):
         self.n = seed
