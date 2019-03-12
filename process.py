@@ -14,6 +14,10 @@
         2 - running
         3 - ready
         4 - blocked
+
+        type:
+        0 - CPU Burst
+        1 - I/O Burst
 '''
 class Process(object):
     def __init__(self, arrive, status, cpuBurstNumber, cpuBurstTimes):
@@ -21,5 +25,4 @@ class Process(object):
         self.state = status
         self.cpuBurstNum = cpuBurstNumber
         self.cpuBurstTimes = cpuBurstTimes
-    def addBurstTime(self, burstTime):
-        cpuBurstTime.append(burstTime)
+        self.type = 0
