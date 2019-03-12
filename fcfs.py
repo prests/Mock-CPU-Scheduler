@@ -1,21 +1,23 @@
 # /usr/bin/python3
 import process
 import rand48
+import expRandom
+import math
 
-def main(seed, upperBound, n, tCS):
+def fcfsSort(processes):
+    for i in range(0,len(processes)):
+        for j in range(0, len(processes)-i-1):
+            if processes[j].arrivalTime > processes[j+1]:
+                processes[j], processes[j+1] = processes[j+1], processes[j]
+    return processes
+
+def main(processes):
     print("Algorithm FCFS")
+    processes = fcfsSort(processes)
+    queue = []
 
-    r = rand48.Rand48(0)
-    r.srand(seed)
+    t = 0
+    completed = 0
 
-    processes = []
-
-    for i in range(0, n):
-        arrivalTime = r.drand()
-        cpuBurstNumber = round(r.drand()*100)+1
-        CPUtime = r.drand()
-        IOtime = r.drand()
-        p = process.Process(arrivalTime, 0, cpuBurstNumber)
-        for i in range(0, cpuBurstNumber):
-            
-        print(p.cpuBurstNum)
+    while(completed != len(processes)):
+        

@@ -29,7 +29,8 @@ def classExample(seed, upperBound):
     print("maximum value: %d", maxVal)
     print("average value: %d", avg)
 
-def expDist(uniformDist, l, upperBound, r):
+def expDist(l, upperBound, r):
+    uniformDist = r.drand()
     while(True):
         x = -math.log(uniformDist)/float(l)
         if(x > upperBound):

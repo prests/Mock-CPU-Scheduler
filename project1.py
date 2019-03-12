@@ -2,6 +2,7 @@
 
 #Used for command line argument parsing
 import sys
+import math
 
 #Our algorithms
 import fcfs
@@ -9,12 +10,30 @@ import rr
 import sjf
 import srt
 
-
+import process
+import rand48
+import expRandom
 
 def main(seed, lambdaED, upperBound, n, tCS, alpha, timeSlice, rrBeginning):
+    r = rand48.Rand48(0)
+    r.srand(seed)
+    processes = []
+
+    for i in range(0, n):
+        arrivalTime = math.floor(expRandom.expDist(lambdaED, upperBound, r))
+        print(arrivalTime)
+        cpuBurstNumber = math.floor(r.drand()*100)+1
+        print(cpuBurstNumber)
+        cpuBurstTimes = []
+        for i in range(0, (cpuBurstNumber-1)*2+1):
+            cpuBurstTimes.append(math.ceil(expRandom.expDist(lambdaED, upperBound, r)))
+        
+        p = process.Process(arrivalTime, 0, cpuBurstNumber, cpuBurstTimes)
+        processes.append(p)
+    
     sjf.main(seed, lambdaED, upperBound, n, tCS, alpha)
     srt.main(seed, lambdaED, upperBound, n, tCS, alpha)
-    fcfs.main(seed, upperBound, n, tCS)
+    fcfs.main(processes)
     rr.main(seed, upperBound, n, timeSlice, rrBeginning)
 
 '''
@@ -76,7 +95,7 @@ if __name__ == '__main__':
     #Checking alpha constant for exponential distribution
     alpha = sys.argv[6]
     try:
-        alpha = int(alpha)
+        alpha = float(alpha)
     except:
         print("Invalid alpha provided (not integer)")
         sys.exit()
