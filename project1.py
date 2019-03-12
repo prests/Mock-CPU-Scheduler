@@ -28,7 +28,7 @@ def main(seed, lambdaED, upperBound, n, tCS, alpha, timeSlice, rrBeginning):
         for i in range(0, (cpuBurstNumber-1)*2+1):
             cpuBurstTimes.append(math.ceil(expRandom.expDist(lambdaED, upperBound, r)))
         
-        p = process.Process(arrivalTime, 0, cpuBurstNumber, cpuBurstTimes)
+        p = process.Process(arrivalTime, 0, (cpuBurstNumber-1)*2+1, cpuBurstTimes)
         processes.append(p)
     
     sjf.main(seed, lambdaED, upperBound, n, tCS, alpha)
