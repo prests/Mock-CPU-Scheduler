@@ -13,6 +13,7 @@ import srt
 import process
 import rand48
 import expRandom
+import math
 
 def main(seed, lambdaED, upperBound, n, tCS, alpha, timeSlice, rrBeginning):
     r = rand48.Rand48(0)
@@ -34,10 +35,10 @@ def main(seed, lambdaED, upperBound, n, tCS, alpha, timeSlice, rrBeginning):
         p = process.Process(arrivalTime, 0, (cpuBurstNumber-1)*2+1, cpuBurstTimes)
         processes.append(p)
     
-    sjf.main(seed, lambdaED, upperBound, n, tCS, alpha)
-    srt.main(seed, lambdaED, upperBound, n, tCS, alpha)
+    sjf.main(processes, tCS, alpha, math.ceil(1/float(lambdaED)))
+    srt.main(processes, tCs, alpha, math.ceil(1/float(lambdaED)))
     fcfs.main(processes)
-    rr.main(seed, upperBound, n, timeSlice, rrBeginning)
+    rr.main(processes, timeSlice, rrBeginning, tCS)
 
 '''
 Parse arguments
