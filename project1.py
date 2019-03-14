@@ -19,6 +19,9 @@ def main(seed, lambdaED, upperBound, n, tCS, alpha, timeSlice, rrBeginning):
     r.srand(seed)
     processes = []
 
+    '''
+        Get all the processes from parameters
+    '''
     for i in range(0, n):
         arrivalTime = math.floor(expRandom.expDist(lambdaED, upperBound, r))
         print(arrivalTime)
