@@ -35,15 +35,10 @@ def expDist(l, upperBound, r):
         x = -math.log(uniformDist)/float(l)
         if(x > upperBound):
             uniformDist = r.drand()
-            print("failed")
         else:
             break
     return x
         
-        
-    avg = total/iterations
-    print("x average: %s", avg)
-    return avg
 
 
 if __name__ == "__main__":

@@ -4,8 +4,7 @@ import rand48
 import expRandom
 import math
 
-def shiftQueue(queue):
-    return queue
+import time
 
 def fcfsSort(processes):
     for i in range(0,len(processes)):
@@ -23,19 +22,18 @@ def main(processes):
     cpuBurstNum = 0
     startTime = 0
     print("time %dms: Algorithm FCFS starts" % t)
-    while(completed != len(processes)):
+    while(True):
         for i in processes:
             if(t == i.arrivalTime and i.state == 0):
-                if(len(queue) == 0):
-                    startTime = t
-                    i.changeState(2)
-                else:
-                    i.changeState(3)
+                i.changeState(3)
                 print("time %dms: Process Arrived" % t)
                 queue.append(i)
         
         if(len(queue) > 0):
-            if(t == queue[0].cpuBurstTimes[cpuBurstNum]):
+            if(queue[0].state == 3):
+                startTime = t
+                queue[0].changeState(2)
+            if(t == startTime + queue[0].cpuBurstTimes[cpuBurstNum]):
                 if(queue[0].state == 2):
                     print("time %dms: Process Finished using the CPU" % t)
                 else:
@@ -46,17 +44,22 @@ def main(processes):
                     queue[0].changeState(4)
                 else:
                     queue[0].changeState(2)
+                
+                startTime = t
 
                 if(cpuBurstNum == queue[0].cpuBurstNum):
-                    print("time %dms: Process terminates by finishing its last CPU burst")
+                    print("time %dms: Process terminates by finishing its last CPU burst" % t)
                     cpuBurstNum = 0
-                    shiftQueue(queue)
+                    queue.pop(0)
                     completed += 1
-            elif(t == startTime):
+                    t -= 1
+                    if(completed == len(processes)):
+                        break
+                
+            if(t == startTime):
                 if(queue[0].state == 2):
                     print("time %dms: Process Started using the CPU" % t)
                 else:
                     print("time %dms: Process Started using the I/O" % t)
-
         t += 1
-    print("time %dms: End of simulation")
+    print("time %dms: End of simulation" % t)
