@@ -1,4 +1,4 @@
 # /usr/bin/python3
 
-def main(seed, lambdaED, upperBound, n, tCS, alpha):
+def main(processes, tCS, alpha, tau):
     print("Algorithm SJF")
