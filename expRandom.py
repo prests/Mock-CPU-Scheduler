@@ -1,6 +1,9 @@
 import rand48
 import math
 
+'''
+    This function never gets called it's just the class example of exponential distribution
+'''
 def classExample(seed, upperBound):
     r = rand48.Rand48(0)
     r.srand(seed)
@@ -29,6 +32,10 @@ def classExample(seed, upperBound):
     print("maximum value: %d", maxVal)
     print("average value: %d", avg)
 
+
+'''
+    Generate one value through exponential distribution
+'''
 def expDist(l, upperBound, r):
     uniformDist = r.drand()
     while(True):
