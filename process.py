@@ -21,5 +21,6 @@ class Process(object):
         self.state = status
         self.cpuBurstNum = cpuBurstNumber
         self.cpuBurstTimes = cpuBurstTimes
+        self.completed = 0
     def changeState(self, status):
         self.state = status
