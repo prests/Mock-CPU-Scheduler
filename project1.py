@@ -10,9 +10,14 @@ import rr
 import sjf
 import srt
 
+#Our classes
 import process
 import rand48
+
+#Exponential Distribution
 import expRandom
+
+#Other imports needed
 import math
 
 def main(seed, lambdaED, upperBound, n, tCS, alpha, timeSlice, rrBeginning):
