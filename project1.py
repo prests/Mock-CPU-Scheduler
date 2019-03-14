@@ -35,10 +35,13 @@ def main(seed, lambdaED, upperBound, n, tCS, alpha, timeSlice, rrBeginning):
         p = process.Process(arrivalTime, 0, (cpuBurstNumber-1)*2+1, cpuBurstTimes)
         processes.append(p)
     
-    sjf.main(processes, tCS, alpha, math.ceil(1/float(lambdaED)))
-    srt.main(processes, tCs, alpha, math.ceil(1/float(lambdaED)))
-    fcfs.main(processes)
-    rr.main(processes, timeSlice, rrBeginning, tCS)
+    '''
+        All the sorting algorithms
+    '''
+    sjf.main(processes, tCS, alpha, math.ceil(1/float(lambdaED))) #Shortest Job First
+    srt.main(processes, tCs, alpha, math.ceil(1/float(lambdaED))) #Shortest Remaining First
+    fcfs.main(processes) #First Come First Server
+    rr.main(processes, timeSlice, rrBeginning, tCS) #Round Robin
 
 '''
 Parse arguments
