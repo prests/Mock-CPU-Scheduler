@@ -16,11 +16,12 @@
         4 - blocked
 '''
 class Process(object):
-    def __init__(self, arrive, status, cpuBurstNumber, cpuBurstTimes):
+    def __init__(self, arrive, status, cpuBurstNumber, cpuBurstTimes, newName):
         self.arrivalTime = arrive
         self.state = status
         self.cpuBurstNum = cpuBurstNumber
         self.cpuBurstTimes = cpuBurstTimes
         self.completed = 0
+        self.name = newName
     def changeState(self, status):
         self.state = status

@@ -24,7 +24,7 @@ def main(seed, lambdaED, upperBound, n, tCS, alpha, timeSlice, rrBeginning):
     r = rand48.Rand48(0)
     r.srand(seed)
     processes = []
-
+    alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
     '''
         Get all the processes from parameters
     '''
@@ -37,7 +37,7 @@ def main(seed, lambdaED, upperBound, n, tCS, alpha, timeSlice, rrBeginning):
         for j in range(0, (cpuBurstNumber-1)*2+1):
             cpuBurstTimes.append(math.ceil(expRandom.expDist(lambdaED, upperBound, r)))
         
-        p = process.Process(arrivalTime, 0, (cpuBurstNumber-1)*2+1, cpuBurstTimes)
+        p = process.Process(arrivalTime, 0, (cpuBurstNumber-1)*2+1, cpuBurstTimes, alphabet[i])
         processes.append(p)
     
     '''
