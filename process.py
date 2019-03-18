@@ -19,8 +19,10 @@ class Process(object):
     def __init__(self, arrive, status, cpuBurstNumber, cpuBurstTimes):
         self.arrivalTime = arrive
         self.state = status
-        self.cpuBurstNum = cpuBurstNumber
+        self.cpuBurstNum = cpuBurstNumber # num bursts process will have including io bursts
         self.cpuBurstTimes = cpuBurstTimes
         self.completed = 0
+        self.waitTime = 0
+        self.remainingTime = 0
     def changeState(self, status):
         self.state = status
