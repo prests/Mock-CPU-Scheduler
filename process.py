@@ -23,5 +23,6 @@ class Process(object):
         self.cpuBurstTimes = cpuBurstTimes
         self.completed = 0
         self.name = newName
+        self.startTime = 0
     def changeState(self, status):
         self.state = status

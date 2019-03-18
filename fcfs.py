@@ -6,6 +6,44 @@ import math
 
 import time
 
+
+def printQueue(queue):
+    if len(queue) == 0:
+        return "[Q <empty>]"
+    else:
+        queueStr = "[Q "
+        for i in range(len(queue)):
+            if(i == len(queue)-1):
+                queueStr += queue[i].name + "]"
+            else:
+                queueStr += queue[i].name + " "
+        return queueStr
+
+
+'''
+    Output formating
+'''
+def event(eventType, queue, process, t):
+    queueStr = printQueue(queue)
+    if(eventType == "arrival"):
+        print("time %dms: Process %s arrived; added to ready queue %s" %(t, process.name, queueStr))
+    elif(eventType == "cpuStart"):
+        print("time %dms: Process %s started using the CPU for %dms burst %s" %(t, process.name, process.cpuBurstTimes[process.completed], queueStr))
+    elif(eventType == "cpuFinish"):
+        print("time %dms: Process %s completed a CPU burst; %d to go %s" %(t, process.name, process.cpuBurstNum-process.completed, queueStr))
+    elif(eventType == "ioStart"):
+        if(process.name == "D"):
+            print(len(process.cpuBurstTimes))
+            print(process.cpuBurstNum)
+            print(process.completed)
+        print("time %dms: Process %s switching out of CPU; will block on I/O until time %dms %s" %(t, process.name, t+process.cpuBurstTimes[process.completed], queueStr))
+    elif(eventType == "ioFinish"):
+        print("time %dms: Process %s completed I/O; added to ready queue %s" %(t, process.name, queueStr))
+    elif(eventType == "terminated"):
+        print("time %dms: Process %s terminated %s" %(t, process.name, queueStr))
+    else:
+        print("I'm not sure how you got here...")
+
 '''
     Organize the processes based on when they arrive
 '''
@@ -20,53 +58,66 @@ def fcfsSort(processes):
 '''
     FCFS algorithm
 '''
-def main(processes):
-    processes = fcfsSort(processes)
+def main(processes, tCS):
+    print(int(tCS/2))
+    #processes = fcfsSort(processes)
     queue = []
-
+    currentProcess = None
     t = 0
     completed = 0
-    cpuBurstNum = 0
-    startTime = 0 #Start time of process
-    print("time %dms: Algorithm FCFS starts" % t)
+    contextSwitchTime = -1
+    contextSwitchIn = False
+    contextSwitchOut = False
+    print("time %dms: Simulator started for FCFS [Q <empty>]" % t)
     while(True):
         for i in processes:
             if(t == i.arrivalTime and i.state == 0): #Marks if a process arrives
                 i.changeState(3) #Marks it as ready
-                print("time %dms: Process Arrived" % t)
                 queue.append(i)
+                event("arrival", queue, i, t)
         
-        if(len(queue) > 0):
-            if(queue[0].state == 3): #Changes the first process in queue from ready to in CPU
-                startTime = t
-                queue[0].changeState(2)
-            if(t == startTime + queue[0].cpuBurstTimes[cpuBurstNum]): #If CPU burst or I/O block is finished
-                if(queue[0].state == 2):
-                    print("time %dms: Process Finished using the CPU" % t)
-                else:
-                    print("time %dms: Process Finished using the I/O" % t)
+        if(len(queue) > 0 or currentProcess is not None):
+            if(contextSwitchOut and (t == contextSwitchTime + int(tCS/2))):
+                contextSwitchOut = False
+                currentProcess = None
 
-                cpuBurstNum += 1
-                if(queue[0].state == 2): #If CPU burst switch to I/O if I/O switch to CPU
-                    queue[0].changeState(4)
+            if(currentProcess is None): #Start a process if nothing running
+                if(contextSwitchIn and (t == contextSwitchTime + int(tCS/2))):
+                    currentProcess = queue.pop(0)
+                    currentProcess.changeState(2)
+                    event("cpuStart", queue, currentProcess, t)
+                    contextSwitchIn = False
+                    currentProcess.startTime = t
                 else:
-                    queue[0].changeState(2)
-                
-                startTime = t
+                    if(not contextSwitchIn):
+                        contextSwitchIn = True
+                        contextSwitchTime = t
+            else:
+                if(t == currentProcess.startTime + currentProcess.cpuBurstTimes[currentProcess.completed]): #If CPU burst or I/O block is finished
+                    event("cpuFinish", queue, currentProcess, t)
+                    currentProcess.completed += 1
+                    event("ioStart", queue, currentProcess, t)
+                    contextSwitchOut = True
+                    contextSwitchTime = t
+                    currentProcess.state = 4
+                    currentProcess.startTime = t
+                    print("%s has completed: %d" %(currentProcess.name, currentProcess.completed))
+                    if(currentProcess.completed == len(currentProcess.cpuBurstTimes)): #Last process is finished
+                        event("terminated", queue, currentProcess, t)
+                        completed += 1
 
-                if(cpuBurstNum == queue[0].cpuBurstNum): #Last process is finished
-                    print("time %dms: Process terminates by finishing its last CPU burst" % t)
-                    cpuBurstNum = 0
-                    queue.pop(0)
-                    completed += 1
-                    t -= 1
-                    if(completed == len(processes)):
-                        break
+                        if(completed == len(processes)):
+                            t += 2
+                            break
+
                 
-            if(t == startTime): #Start a process
-                if(queue[0].state == 2):
-                    print("time %dms: Process Started using the CPU" % t)
-                else:
-                    print("time %dms: Process Started using the I/O" % t)
+        for i in processes:
+            if(i.state == 4 and (t == i.startTime + i.cpuBurstTimes[i.completed])): #finished I/O processes
+                i.state = 3
+                i.completed += 1
+                queue.append(i)
+                event("ioFinish", queue, i, t)
+        #print(len(queue))
+
         t += 1
-    print("time %dms: End of simulation" % t)
+    print("time %dms: Simulator ended for FCFS [Q <empty>]" % t)
