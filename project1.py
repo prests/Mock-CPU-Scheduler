@@ -7,7 +7,7 @@ import math
 #Our algorithms
 import fcfs
 import rr
-import sjf
+#import sjf
 import srt
 
 #Our classes
@@ -24,7 +24,7 @@ def main(seed, lambdaED, upperBound, n, tCS, alpha, timeSlice, rrBeginning):
     r = rand48.Rand48(0)
     r.srand(seed)
     processes = []
-
+    alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
     '''
         Get all the processes from parameters
     '''
@@ -37,21 +37,22 @@ def main(seed, lambdaED, upperBound, n, tCS, alpha, timeSlice, rrBeginning):
         for j in range(0, (cpuBurstNumber-1)*2+1):
             cpuBurstTimes.append(math.ceil(expRandom.expDist(lambdaED, upperBound, r)))
         
-        p = process.Process(arrivalTime, 0, (cpuBurstNumber-1)*2+1, cpuBurstTimes)
+        p = process.Process(arrivalTime, 0, (cpuBurstNumber-1)*2+1, cpuBurstTimes, alphabet[i])
         processes.append(p)
     
     '''
         All the sorting algorithms
     '''
-    sjf.main(processes, tCS, alpha, math.ceil(1/float(lambdaED))) #Shortest Job First
-    srt.main(processes, tCs, alpha, math.ceil(1/float(lambdaED))) #Shortest Remaining First
-    fcfs.main(processes) #First Come First Server
+    #sjf.main(processes, tCS, alpha, math.ceil(1/float(lambdaED))) #Shortest Job First
+    srt.main(processes, tCS, alpha, math.ceil(1/float(lambdaED))) #Shortest Remaining First
+    fcfs.main(processes, tCS) #First Come First Server
     rr.main(processes, timeSlice, rrBeginning, tCS) #Round Robin
 
 '''
 Parse arguments
 '''
 if __name__ == '__main__':
+    '''
     #Checking size of argument array
     if(len(sys.argv) < 8):
         print("Invalid number of arguments provided")
@@ -130,5 +131,13 @@ if __name__ == '__main__':
         else:
             print("Invalid queue arrival for Round Robin check argument 9 (BEGGINING/END)")
             sys.exit()
-    
+    '''
+    seed = 70
+    lambdaED = 0.001
+    upperBound = 3000
+    n = 10
+    tCS = 8
+    alpha = 0.5
+    timeSlice = 80
+    rrBeginning = "BEGGINNING"
     main(seed, lambdaED, upperBound, n, tCS, alpha, timeSlice, rrBeginning)

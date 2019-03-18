@@ -16,7 +16,7 @@
         4 - blocked
 '''
 class Process(object):
-    def __init__(self, arrive, status, cpuBurstNumber, cpuBurstTimes):
+    def __init__(self, arrive, status, cpuBurstNumber, cpuBurstTimes, newName):
         self.arrivalTime = arrive
         self.state = status
         self.cpuBurstNum = cpuBurstNumber # num bursts process will have including io bursts
@@ -24,5 +24,7 @@ class Process(object):
         self.completed = 0
         self.waitTime = 0
         self.remainingTime = 0
+        self.name = newName
+        self.startTime = 0
     def changeState(self, status):
         self.state = status
