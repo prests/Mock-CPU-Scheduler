@@ -98,6 +98,8 @@ def main(processes, tCS, alpha):
                             break
                     else: #start blocking on I/O
                         event("cpuFinish", queue, currentProcess, t)
+                        currentProcess.tau = expAverage.nextTau(currentProcess.tau, alpha, currentProcess.actualBurstTime[currentProcess.completed-1])
+                        event("newTau", queue, currentProcess, t)
                         event("ioStart", queue, currentProcess, t)
                         currentProcess.state = 4
                         currentProcess.startTime = t
