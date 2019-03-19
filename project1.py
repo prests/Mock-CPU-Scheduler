@@ -6,7 +6,7 @@ import math
 
 #Our algorithms
 import fcfs
-import rr
+#import rr
 #import sjf
 import srt
 
@@ -45,8 +45,8 @@ def main(seed, lambdaED, upperBound, n, tCS, alpha, timeSlice, rrBeginning):
     '''
     #sjf.main(processes, tCS, alpha, math.ceil(1/float(lambdaED))) #Shortest Job First
     srt.main(processes, tCS, alpha, math.ceil(1/float(lambdaED))) #Shortest Remaining First
-    fcfs.main(processes, tCS) #First Come First Server
-    rr.main(processes, timeSlice, rrBeginning, tCS) #Round Robin
+    fcfs.main(processes, tCS) #First Come First Serve
+    #rr.main(processes, timeSlice, rrBeginning, tCS) #Round Robin
 
 '''
 Parse arguments
