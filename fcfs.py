@@ -6,7 +6,9 @@ import math
 
 import time
 
-
+'''
+    Prints queue for submitty
+'''
 def printQueue(queue):
     if len(queue) == 0:
         return "[Q <empty>]"
@@ -44,23 +46,11 @@ def event(eventType, queue, process, t):
     else:
         print("I'm not sure how you got here...")
 
-'''
-    Organize the processes based on when they arrive
-'''
-def fcfsSort(processes):
-    for i in range(0,len(processes)):
-        for j in range(0, len(processes)-i-1):
-            if processes[j].arrivalTime > processes[j+1].arrivalTime:
-                processes[j], processes[j+1] = processes[j+1], processes[j]
-    return processes
-
 
 '''
     FCFS algorithm
 '''
 def main(processes, tCS):
-    print(int(tCS/2))
-    #processes = fcfsSort(processes)
     queue = []
     currentProcess = None
     t = 0
@@ -77,41 +67,35 @@ def main(processes, tCS):
                 queue.append(i)
                 event("arrival", queue, i, t)
 
-        if(contextSwitchOut and (t == contextSwitchTime + int(tCS/2))):
+        if(contextSwitchOut and (t == contextSwitchTime + int(tCS/2))): #Context switching to get a process out of CPU
             contextSwitchOut = False
             currentProcess = None
 
-        if(len(queue) > 0 or currentProcess is not None):
-            if(contextSwitchOut and (t == contextSwitchTime + int(tCS/2))):
-                contextSwitchOut = False
-                currentProcess = None
-
+        if(len(queue) > 0 or currentProcess is not None): #If there is a process running or there are ready processes
             if(currentProcess is None): #Start a process if nothing running
-                if(contextSwitchIn and (t == contextSwitchTime + int(tCS/2))):
-                    currentProcess = queue.pop(0)
+                if(contextSwitchIn and (t == contextSwitchTime + int(tCS/2))): #account for context switching
+                    currentProcess = queue.pop(0) #take process off ready queue
                     currentProcess.changeState(2)
                     event("cpuStart", queue, currentProcess, t)
-                    contextSwitchIn = False
-                    currentProcess.startTime = t
+                    contextSwitchIn = False #mark done context switching
+                    currentProcess.startTime = t #set start time of process
                 else:
-                    if(not contextSwitchIn and not contextSwitchOut and len(queue) > 0):
+                    if(not contextSwitchIn and not contextSwitchOut and len(queue) > 0): #start context switch to add process in
                         contextSwitchIn = True
                         contextSwitchTime = t
             else:
                 if(t == currentProcess.startTime + currentProcess.cpuBurstTimes[currentProcess.completed] and not contextSwitchOut): #If CPU burst or I/O block is finished
                     event("cpuFinish", queue, currentProcess, t)
                     currentProcess.completed += 1
-                    if(currentProcess.completed % 2 == 0):
-                        break
-                    if(currentProcess.completed == len(currentProcess.cpuBurstTimes)): #Last process is finished
+                    if(currentProcess.completed == len(currentProcess.cpuBurstTimes)): #Last cpu burst of process finished
                         event("terminated", queue, currentProcess, t)
                         completed += 1
                         currentProcess.state = 5
                         currentProcess = None
-                        if(completed == len(processes)):
+                        if(completed == len(processes)): #all processes are done
                             t += 2
                             break
-                    else:
+                    else: #start blocking on I/O
                         event("ioStart", queue, currentProcess, t)
                         currentProcess.state = 4
                         currentProcess.startTime = t
@@ -120,12 +104,11 @@ def main(processes, tCS):
 
                 
         for i in processes:
-            if(i.state == 4 and (t == i.startTime + i.cpuBurstTimes[i.completed])): #finished I/O processes
+            if(i.state == 4 and (t == i.startTime + i.cpuBurstTimes[i.completed])): #finished I/O blocking
                 i.state = 3
                 i.completed += 1
                 queue.append(i)
                 event("ioFinish", queue, i, t)
-        #print(len(queue))
 
-        t += 1
+        t += 1 #Increment time
     print("time %dms: Simulator ended for FCFS [Q <empty>]" % t)
