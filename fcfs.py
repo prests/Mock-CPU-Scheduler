@@ -1,10 +1,4 @@
 # /usr/bin/python3
-import process
-import rand48
-import expRandom
-import math
-
-import time
 
 '''
     Prints queue for submitty
@@ -81,7 +75,6 @@ def main(processes, tCS):
                         contextSwitchTime = t
             else:
                 if(t == currentProcess.startTime + currentProcess.cpuBurstTimes[currentProcess.completed] and not contextSwitchOut): #If CPU burst or I/O block is finished
-                    event("cpuFinish", queue, currentProcess, t)
                     currentProcess.completed += 1
                     if(currentProcess.completed == currentProcess.cpuBurstNum): #Last cpu burst of process finished
                         event("terminated", queue, currentProcess, t)
@@ -92,6 +85,7 @@ def main(processes, tCS):
                             t += 2
                             break
                     else: #start blocking on I/O
+                        event("cpuFinish", queue, currentProcess, t)
                         event("ioStart", queue, currentProcess, t)
                         currentProcess.state = 4
                         currentProcess.startTime = t

@@ -1,4 +1,4 @@
 # /usr/bin/python3
 
-def main(processes, tCS, alpha, tau):
+def main(processes, tCS, alpha):
     print("Algorithm SRT")

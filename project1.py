@@ -20,6 +20,9 @@ import expRandom
 #Other imports needed
 import math
 
+'''
+    Printing all the processes before an algorithm for submitty
+'''
 def printProcesses(processes):
     for i in processes:
         print("Process %s [NEW] (arrival time %d ms) %d CPU bursts" %(i.name, i.arrivalTime, i.cpuBurstNum))
@@ -41,16 +44,17 @@ def main(seed, lambdaED, upperBound, n, tCS, alpha, timeSlice, rrBeginning):
         for j in range(0, (cpuBurstNumber-1)*2+1):
             cpuBurstTimes.append(math.ceil(expRandom.expDist(lambdaED, upperBound, r)))
         
-        p = process.Process(arrivalTime, 0, cpuBurstNumber, cpuBurstTimes, alphabet[i])
+        tau = math.ceil(1/float(lambdaED))
+        p = process.Process(arrivalTime, 0, cpuBurstNumber, cpuBurstTimes, alphabet[i], tau)
         processes.append(p)
     
     '''
         All the sorting algorithms
     '''
     printProcesses(processes)
-    #sjf.main(processes, tCS, alpha, math.ceil(1/float(lambdaED))) #Shortest Job First
+    #sjf.main(processes, tCS, alpha) #Shortest Job First
     printProcesses(processes)
-    srt.main(processes, tCS, alpha, math.ceil(1/float(lambdaED))) #Shortest Remaining First
+    srt.main(processes, tCS, alpha) #Shortest Remaining First
     printProcesses(processes)
     fcfs.main(processes, tCS) #First Come First Serve
     printProcesses(processes)
