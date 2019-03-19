@@ -34,10 +34,6 @@ def event(eventType, queue, process, t):
     elif(eventType == "cpuFinish"):
         print("time %dms: Process %s completed a CPU burst; %d to go %s" %(t, process.name, process.cpuBurstNum-process.completed, queueStr))
     elif(eventType == "ioStart"):
-        if(process.name == "D"):
-            print(len(process.cpuBurstTimes))
-            print(process.cpuBurstNum)
-            print(process.completed)
         print("time %dms: Process %s switching out of CPU; will block on I/O until time %dms %s" %(t, process.name, t+process.cpuBurstTimes[process.completed], queueStr))
     elif(eventType == "ioFinish"):
         print("time %dms: Process %s completed I/O; added to ready queue %s" %(t, process.name, queueStr))
@@ -87,7 +83,7 @@ def main(processes, tCS):
                 if(t == currentProcess.startTime + currentProcess.cpuBurstTimes[currentProcess.completed] and not contextSwitchOut): #If CPU burst or I/O block is finished
                     event("cpuFinish", queue, currentProcess, t)
                     currentProcess.completed += 1
-                    if(currentProcess.completed == len(currentProcess.cpuBurstTimes)): #Last cpu burst of process finished
+                    if(currentProcess.completed == currentProcess.cpuBurstNum): #Last cpu burst of process finished
                         event("terminated", queue, currentProcess, t)
                         completed += 1
                         currentProcess.state = 5
@@ -106,7 +102,6 @@ def main(processes, tCS):
         for i in processes:
             if(i.state == 4 and (t == i.startTime + i.cpuBurstTimes[i.completed])): #finished I/O blocking
                 i.state = 3
-                i.completed += 1
                 queue.append(i)
                 event("ioFinish", queue, i, t)
 
