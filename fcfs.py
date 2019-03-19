@@ -70,6 +70,11 @@ def main(processes, tCS):
     contextSwitchOut = False
     print("time %dms: Simulator started for FCFS [Q <empty>]" % t)
     while(True):
+        '''
+        if t % 1000 == 0:
+            for i in processes:
+                print("Process %s: has %d bursts and %d completed with status %d" %(i.name, i.cpuBurstNum, i.completed, i.state))
+        '''
         for i in processes:
             if(t == i.arrivalTime and i.state == 0): #Marks if a process arrives
                 i.changeState(3) #Marks it as ready
@@ -82,33 +87,45 @@ def main(processes, tCS):
                 currentProcess = None
 
             if(currentProcess is None): #Start a process if nothing running
+                if(t == 306039):
+                    print('asdfadsf')
+                if(t > 306666 and t < 306675):
+                    print(t)
+                    print(contextSwitchIn)
+                    print(contextSwitchOut)
+                    print(contextSwitchTime)
                 if(contextSwitchIn and (t == contextSwitchTime + int(tCS/2))):
                     currentProcess = queue.pop(0)
                     currentProcess.changeState(2)
+                    print("Process %s: has completed %d and has %d" %(currentProcess.name, currentProcess.completed, currentProcess.cpuBurstNum))
                     event("cpuStart", queue, currentProcess, t)
                     contextSwitchIn = False
                     currentProcess.startTime = t
                 else:
-                    if(not contextSwitchIn):
+                    if(not contextSwitchIn and not contextSwitchOut and len(queue) > 0):
                         contextSwitchIn = True
                         contextSwitchTime = t
             else:
                 if(t == currentProcess.startTime + currentProcess.cpuBurstTimes[currentProcess.completed]): #If CPU burst or I/O block is finished
                     event("cpuFinish", queue, currentProcess, t)
                     currentProcess.completed += 1
-                    event("ioStart", queue, currentProcess, t)
-                    contextSwitchOut = True
-                    contextSwitchTime = t
-                    currentProcess.state = 4
-                    currentProcess.startTime = t
-                    print("%s has completed: %d" %(currentProcess.name, currentProcess.completed))
                     if(currentProcess.completed == len(currentProcess.cpuBurstTimes)): #Last process is finished
                         event("terminated", queue, currentProcess, t)
                         completed += 1
-
+                        currentProcess.state = 5
+                        currentProcess = None
                         if(completed == len(processes)):
                             t += 2
                             break
+                    else:
+                        event("ioStart", queue, currentProcess, t)
+                        currentProcess.state = 4
+                        currentProcess.startTime = t
+                        currentProcess = None
+                    if(t == 306039):
+                        print('yo')
+                    contextSwitchOut = True
+                    contextSwitchTime = t
 
                 
         for i in processes:
