@@ -6,7 +6,7 @@ import math
 
 #Our algorithms
 import fcfs
-#import rr
+import rr
 #import sjf
 import srt
 
@@ -58,7 +58,7 @@ def main(seed, lambdaED, upperBound, n, tCS, alpha, timeSlice, rrBeginning):
     printProcesses(processes)
     fcfs.main(processes, tCS) #First Come First Serve
     printProcesses(processes)
-    #rr.main(processes, timeSlice, rrBeginning, tCS) #Round Robin
+    #rr.main(processes, rrBeginning, timeSlice, tCS) #Round Robin
 
 '''
 Parse arguments
