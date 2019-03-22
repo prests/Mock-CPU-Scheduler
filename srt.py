@@ -25,7 +25,10 @@ def event(eventType, queue, process, t, preempt):
     if(eventType == "arrival"):
         print("time %dms: Process %s (tau %dms) arrived; added to ready queue %s" %(t, process.name, process.tau, queueStr))
     elif(eventType == "cpuStart"):
-        print("time %dms: Process %s started using the CPU for %dms burst %s" %(t, process.name, process.cpuBurstTimes[process.completed], queueStr))
+        if(process.currentPrempt):
+            print("time %dms: Process %s started using the CPU with %dms remaining %s" %(t, process.name, process.cpuBurstTimes[process.completed], queueStr))
+        else:
+            print("time %dms: Process %s started using the CPU for %dms burst %s" %(t, process.name, process.cpuBurstTimes[process.completed], queueStr))
     elif(eventType == "cpuFinish"):
         print("time %dms: Process %s completed a CPU burst; %d to go %s" %(t, process.name, process.cpuBurstNum-process.completed, queueStr))
     elif(eventType == "ioStart"):
@@ -33,7 +36,7 @@ def event(eventType, queue, process, t, preempt):
     elif(eventType == "ioFinish"):
         print("time %dms: Process %s (tau %dms) completed I/O; added to ready queue %s" %(t, process.name, process.tau, queueStr))
     elif(eventType == "ioPreempt"):
-        print("time %dms: Process %s (tau %dms) completed I/O and will preempt %s %s")
+        print("time %dms: Process %s (tau %dms) completed I/O and will preempt %s %s" %(t, process.name, process.tau, preempt.name, queueStr))
     elif(eventType == "terminated"):
         print("time %dms: Process %s terminated %s" %(t, process.name, queueStr))
     elif(eventType == "newTau"):
@@ -91,6 +94,7 @@ def main(processes, tCS, alpha):
             else:
                 if(t == currentProcess.startTime + currentProcess.cpuBurstTimes[currentProcess.completed] and not contextSwitchOut): #If CPU burst or I/O block is finished
                     currentProcess.completed += 1
+                    currentProcess.currentPrempt = False
                     if(currentProcess.completed == currentProcess.cpuBurstNum): #Last cpu burst of process finished
                         event("terminated", queue, currentProcess, t, "")
                         completed += 1
@@ -112,10 +116,16 @@ def main(processes, tCS, alpha):
                 
         for i in processes:
             if(i.state == 4 and (t == i.startTime + i.cpuBurstTimes[i.completed])): #finished I/O blocking
-                #if(currentProcess is not None and (i.tau < currentProcess.tau)): #I/O process preempts current process
-                    
-                    #continue
-                if(len(queue) == 0): #queue is empty
+                if(currentProcess is not None and (i.tau < currentProcess.tau)): #I/O process preempts current process
+                    currentProcess.currentPrempt = True
+                    currentProcess.preemptions += 1
+                    currentProcess.cpuBurstTimes[currentProcess.completed] -= (t -currentProcess.startTime)
+                    event("ioPreempt", queue, i, t, currentProcess)
+                    queue.insert(0,currentProcess)
+                    queue.insert(0,i)
+                    contextSwitchOut = True
+                    contextSwitchTime = t
+                elif(len(queue) == 0): #queue is empty
                     i.changeState(3) #Marks it as ready
                     queue.append(i)
                     event("ioFinish", queue, i, t, "")

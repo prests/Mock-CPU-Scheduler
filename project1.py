@@ -8,7 +8,7 @@ import math
 import fcfs
 #import rr
 import sjf
-#import srt
+import srt
 
 #Our classes
 import process
@@ -30,6 +30,7 @@ def resetProcesses(processes, lambdaED):
         i.remainingTime = 0
         i.startTime = 0
         i.tau = math.ceil(1/float(lambdaED))
+        i.currentPrempt = False
         i.preemptions = 0
         i.state = 0
     return processes
@@ -66,13 +67,13 @@ def main(seed, lambdaED, upperBound, n, tCS, alpha, timeSlice, rrBeginning):
         All the sorting algorithms
     '''
     printProcesses(processes)
-    sjf.main(processes, tCS, alpha) #Shortest Job First
+    #sjf.main(processes, tCS, alpha) #Shortest Job First
     processes = resetProcesses(processes, lambdaED)
     printProcesses(processes)
-    #srt.main(processes, tCS, alpha) #Shortest Remaining First
+    srt.main(processes, tCS, alpha) #Shortest Remaining First
     processes = resetProcesses(processes, lambdaED)
     printProcesses(processes)
-    fcfs.main(processes, tCS) #First Come First Serve
+    #fcfs.main(processes, tCS) #First Come First Serve
     processes = resetProcesses(processes, lambdaED)
     printProcesses(processes)
     #rr.main(processes, timeSlice, rrBeginning, tCS) #Round Robin
