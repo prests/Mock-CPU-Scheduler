@@ -67,13 +67,13 @@ def main(seed, lambdaED, upperBound, n, tCS, alpha, timeSlice, rrBeginning):
         All the sorting algorithms
     '''
     printProcesses(processes)
-    #sjf.main(processes, tCS, alpha) #Shortest Job First
+    sjf.main(processes, tCS, alpha) #Shortest Job First
     processes = resetProcesses(processes, lambdaED)
     printProcesses(processes)
     srt.main(processes, tCS, alpha) #Shortest Remaining First
     processes = resetProcesses(processes, lambdaED)
     printProcesses(processes)
-    #fcfs.main(processes, tCS) #First Come First Serve
+    fcfs.main(processes, tCS) #First Come First Serve
     processes = resetProcesses(processes, lambdaED)
     printProcesses(processes)
     #rr.main(processes, timeSlice, rrBeginning, tCS) #Round Robin

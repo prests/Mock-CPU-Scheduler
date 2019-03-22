@@ -92,9 +92,10 @@ def main(processes, tCS, alpha):
                         contextSwitchIn = True
                         contextSwitchTime = t
             else:
-                if(t == currentProcess.startTime + currentProcess.cpuBurstTimes[currentProcess.completed] and not contextSwitchOut): #If CPU burst or I/O block is finished
+                if((t == currentProcess.startTime + currentProcess.cpuBurstTimes[currentProcess.completed] and not contextSwitchOut and not currentProcess.currentPrempt) or (t == currentProcess.startTime + currentProcess.remainingTime and not contextSwitchOut and currentProcess.currentPrempt)): #If CPU burst or I/O block is finished
                     currentProcess.completed += 1
                     currentProcess.currentPrempt = False
+                    currentProcess.remainingTime = 0
                     if(currentProcess.completed == currentProcess.cpuBurstNum): #Last cpu burst of process finished
                         event("terminated", queue, currentProcess, t, "")
                         completed += 1
@@ -116,10 +117,13 @@ def main(processes, tCS, alpha):
                 
         for i in processes:
             if(i.state == 4 and (t == i.startTime + i.cpuBurstTimes[i.completed])): #finished I/O blocking
-                if(currentProcess is not None and (i.tau < currentProcess.tau)): #I/O process preempts current process
+                if(currentProcess is not None and (i.tau < currentProcess.tau) and not contextSwitchOut): #I/O process preempts current process
+                    if(currentProcess.currentPrempt):
+                        currentProcess.remainingTime -= (t - currentProcess.startTime)
+                    else:
+                        currentProcess.remainingTime = currentProcess.cpuBurstTimes[currentProcess.completed] - (t - currentProcess.startTime)
                     currentProcess.currentPrempt = True
                     currentProcess.preemptions += 1
-                    currentProcess.cpuBurstTimes[currentProcess.completed] -= (t -currentProcess.startTime)
                     event("ioPreempt", queue, i, t, currentProcess)
                     queue.insert(0,currentProcess)
                     queue.insert(0,i)
