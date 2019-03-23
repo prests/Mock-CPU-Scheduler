@@ -64,6 +64,7 @@ def main(processes, tCS, alpha):
                             i.changeState(3) #Marks it as ready
                             queue.insert(j, i)
                             event("arrival", queue, i, t)
+                            break
                     if(i.state != 3): #Arriving process has largest Tau in list
                         i.changeState(3) #Marks it as ready
                         queue.append(i)
@@ -98,7 +99,7 @@ def main(processes, tCS, alpha):
                             break
                     else: #start blocking on I/O
                         event("cpuFinish", queue, currentProcess, t)
-                        currentProcess.tau = expAverage.nextTau(currentProcess.tau, alpha, currentProcess.actualBurstTime[currentProcess.completed-1])
+                        currentProcess.tau = expAverage.nextTau(currentProcess.tau, alpha, currentProcess.cpuBurstTimes[currentProcess.completed-1])
                         event("newTau", queue, currentProcess, t)
                         event("ioStart", queue, currentProcess, t)
                         currentProcess.state = 4
@@ -109,9 +110,21 @@ def main(processes, tCS, alpha):
                 
         for i in processes:
             if(i.state == 4 and (t == i.startTime + i.cpuBurstTimes[i.completed])): #finished I/O blocking
-                i.state = 3
-                queue.append(i)
-                event("ioFinish", queue, i, t)
+                if(len(queue) == 0): #queue is empty
+                    i.changeState(3) #Marks it as ready
+                    queue.append(i)
+                    event("ioFinish", queue, i, t)
+                else:
+                    for j in range(0,len(queue)): #Check if arriving process can cut ready queue
+                        if(i.tau < queue[j].tau):
+                            i.changeState(3) #Marks it as ready
+                            queue.insert(j, i)
+                            event("ioFinish", queue, i, t)
+                            break
+                    if(i.state != 3): #Arriving process has largest Tau in list
+                        i.changeState(3) #Marks it as ready
+                        queue.append(i)
+                        event("ioFinish", queue, i, t)
 
         t += 1 #Increment time
     print("time %dms: Simulator ended for SJF [Q <empty>]" % t)

@@ -6,8 +6,10 @@ import math
 
 #Our algorithms
 import fcfs
-import rr
+#import rr
 #import sjf
+#import rr
+import sjf
 import srt
 
 #Our classes
@@ -19,6 +21,21 @@ import expRandom
 
 #Other imports needed
 import math
+
+'''
+    Reset all values of processes between sorting algorithms
+'''
+def resetProcesses(processes, lambdaED):
+    for i in processes:
+        i.completed = 0
+        i.waitTime = 0
+        i.remainingTime = 0
+        i.startTime = 0
+        i.tau = math.ceil(1/float(lambdaED))
+        i.currentPrempt = False
+        i.preemptions = 0
+        i.state = 0
+    return processes
 
 '''
     Printing all the processes before an algorithm for submitty
@@ -52,11 +69,14 @@ def main(seed, lambdaED, upperBound, n, tCS, alpha, timeSlice, rrBeginning):
         All the sorting algorithms
     '''
     printProcesses(processes)
-    #sjf.main(processes, tCS, alpha) #Shortest Job First
+    sjf.main(processes, tCS, alpha) #Shortest Job First
+    processes = resetProcesses(processes, lambdaED)
     printProcesses(processes)
     srt.main(processes, tCS, alpha) #Shortest Remaining First
+    processes = resetProcesses(processes, lambdaED)
     printProcesses(processes)
     fcfs.main(processes, tCS) #First Come First Serve
+    processes = resetProcesses(processes, lambdaED)
     printProcesses(processes)
     #rr.main(processes, rrBeginning, timeSlice, tCS) #Round Robin
 

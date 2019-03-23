@@ -29,5 +29,6 @@ class Process(object):
         self.startTime = 0
         self.tau = Tau
         self.preemptions = 0
+        self.currentPrempt = False
     def changeState(self, status):
         self.state = status
