@@ -9,7 +9,7 @@ Algorithm SRT
 -- average wait time: 3047.029 ms
 -- average turnaround time: 258833.000 ms
 -- total number of context switches: 708
--- total number of preemptions: 0
+-- total number of preemptions: 257
 Algorithm FCFS
 -- average CPU burst time: 788.696 ms
 -- average wait time: 3622.614 ms

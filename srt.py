@@ -24,6 +24,8 @@ def event(eventType, queue, process, t, preempt):
     queueStr = printQueue(queue)
     if(eventType == "arrival"):
         print("time %dms: Process %s (tau %dms) arrived; added to ready queue %s" %(t, process.name, process.tau, queueStr))
+    elif(eventType == "arrivalPreempt"):
+        print("time %dms: Process %s (tau %dms) arrived and will preempt %s %s" %(t, process.name, process.tau, preempt.name, queueStr))
     elif(eventType == "cpuStart"):
         if(process.currentPrempt):
             print("time %dms: Process %s started using the CPU with %dms remaining %s" %(t, process.name, process.cpuBurstTimes[process.completed], queueStr))
@@ -52,6 +54,7 @@ def main(processes, tCS, alpha):
     waitTimeTotal = 0 #Total wait time for all processes
     turnaroundTimeTotal = 0 #Total turnaround time for all processes
     contextSwitchTotal = 0 #Total number of context switches when running algorithm
+    preemptionTotal = 0 #Total number of preemptions in algorithm
     totalBursts = 0
     for i in processes:
         totalBursts += i.cpuBurstNum
@@ -66,7 +69,20 @@ def main(processes, tCS, alpha):
     while(True):
         for i in processes:
             if(t == i.arrivalTime and i.state == 0): #Marks if a process arrives and checks if it can cut queue
-                if(len(queue) == 0): #queue is empty
+                if(currentProcess is not None and (i.tau < currentProcess.tau) and not contextSwitchOut): #Arrival preempts current process
+                    if(currentProcess.currentPrempt):
+                        currentProcess.remainingTime -= (t - currentProcess.startTime)
+                    else:
+                        currentProcess.remainingTime = currentProcess.cpuBurstTimes[currentProcess.completed] - (t - currentProcess.startTime)
+                    currentProcess.currentPrempt = True
+                    currentProcess.preemptions += 1
+                    event("arrivalPreempt", queue, i, t, currentProcess)
+                    queue.insert(0,currentProcess)
+                    queue.insert(0,i)
+                    contextSwitchOut = True
+                    contextSwitchTime = t
+                    preemptionTotal += 1
+                elif(len(queue) == 0): #queue is empty
                     i.changeState(3) #Marks it as ready
                     queue.append(i)
                     event("arrival", queue, i, t, "")
@@ -144,6 +160,7 @@ def main(processes, tCS, alpha):
                     queue.insert(0,i)
                     contextSwitchOut = True
                     contextSwitchTime = t
+                    preemptionTotal += 1
                 elif(len(queue) == 0): #queue is empty
                     i.changeState(3) #Marks it as ready
                     queue.append(i)
@@ -170,4 +187,4 @@ def main(processes, tCS, alpha):
     averageCPUBurstTime = round(burstTimeTotal/float(totalBursts), 3)
     averageWaitTime = round(waitTimeTotal/float(totalBursts), 3)
     averageTurnaroundTime = round(turnaroundTimeTotal/float(len(processes)), 3)
-    return averageCPUBurstTime, averageWaitTime, averageTurnaroundTime, contextSwitchTotal
+    return averageCPUBurstTime, averageWaitTime, averageTurnaroundTime, contextSwitchTotal, preemptionTotal

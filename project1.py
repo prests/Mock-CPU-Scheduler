@@ -87,8 +87,8 @@ def main(seed, lambdaED, upperBound, n, tCS, alpha, timeSlice, rrBeginning):
     processes = resetProcesses(processes, lambdaED)
 
     printProcesses(processes)
-    avgCPUBurstTime, avgWaitTime, avgTurnTime, contextSwitchTotal = srt.main(processes, tCS, alpha) #Shortest Remaining First
-    calculateAverage(outFile, "SRT", avgCPUBurstTime, avgWaitTime, avgTurnTime, contextSwitchTotal, 0)
+    avgCPUBurstTime, avgWaitTime, avgTurnTime, contextSwitchTotal, preemptionsTotal = srt.main(processes, tCS, alpha) #Shortest Remaining First
+    calculateAverage(outFile, "SRT", avgCPUBurstTime, avgWaitTime, avgTurnTime, contextSwitchTotal, preemptionsTotal)
     processes = resetProcesses(processes, lambdaED)
     
     printProcesses(processes)
