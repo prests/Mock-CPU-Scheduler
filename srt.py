@@ -48,6 +48,13 @@ def event(eventType, queue, process, t, preempt):
     SRT algorithm
 '''
 def main(processes, tCS, alpha):
+    burstTimeTotal = 0 #Total burst time for all processes
+    waitTimeTotal = 0 #Total wait time for all processes
+    turnaroundTimeTotal = 0 #Total turnaround time for all processes
+    contextSwitchTotal = 0 #Total number of context switches when running algorithm
+    totalBursts = 0
+    for i in processes:
+        totalBursts += i.cpuBurstNum
     queue = []
     currentProcess = None
     t = 0
@@ -87,6 +94,7 @@ def main(processes, tCS, alpha):
                     event("cpuStart", queue, currentProcess, t, "")
                     contextSwitchIn = False #mark done context switching
                     currentProcess.startTime = t #set start time of process
+                    contextSwitchTotal += 1
                 else:
                     if(not contextSwitchIn and not contextSwitchOut and len(queue) > 0): #start context switch to add process in
                         contextSwitchIn = True
@@ -97,6 +105,10 @@ def main(processes, tCS, alpha):
                     currentProcess.currentPrempt = False
                     currentProcess.remainingTime = 0
                     if(currentProcess.completed == currentProcess.cpuBurstNum): #Last cpu burst of process finished
+                        burstTimeTotal += currentProcess.cpuBurstTimes[currentProcess.completed]
+                        waitTimeTotal += currentProcess.waitTime
+                        currentProcess.waitTime = 0
+                        turnaroundTimeTotal += (t-currentProcess.arrivalTime) + tCS
                         event("terminated", queue, currentProcess, t, "")
                         completed += 1
                         currentProcess.state = 5
@@ -105,6 +117,9 @@ def main(processes, tCS, alpha):
                             t += 2
                             break
                     else: #start blocking on I/O
+                        burstTimeTotal += currentProcess.cpuBurstTimes[currentProcess.completed]
+                        waitTimeTotal += currentProcess.waitTime
+                        currentProcess.waitTime = 0
                         event("cpuFinish", queue, currentProcess, t, "")
                         currentProcess.tau = expAverage.nextTau(currentProcess.tau, alpha, currentProcess.cpuBurstTimes[currentProcess.completed-1])
                         event("newTau", queue, currentProcess, t, "")
@@ -145,5 +160,14 @@ def main(processes, tCS, alpha):
                         queue.append(i)
                         event("ioFinish", queue, i, t, "")
 
+        for i in processes:
+            if(i.state == 3):
+                i.waitTime += 1
         t += 1 #Increment time
     print("time %dms: Simulator ended for SRT [Q <empty>]" % t)
+
+
+    averageCPUBurstTime = round(burstTimeTotal/float(totalBursts), 3)
+    averageWaitTime = round(waitTimeTotal/float(totalBursts), 3)
+    averageTurnaroundTime = round(turnaroundTimeTotal/float(len(processes)), 3)
+    return averageCPUBurstTime, averageWaitTime, averageTurnaroundTime, contextSwitchTotal

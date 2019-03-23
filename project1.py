@@ -22,6 +22,17 @@ import expRandom
 #Other imports needed
 import math
 
+"""
+    Outputs for algorithm statistics
+"""
+def calculateAverage(outFile, name, averageCPUBurstTime, averageWaitTime, averageTurnaroundTime, contextSwitchTotal, preemptionsTotal):
+    outFile.write("Algorithm %s\n" %(name))
+    outFile.write("-- average CPU burst time: %.3f ms\n" %(averageCPUBurstTime))
+    outFile.write("-- average wait time: %.3f ms\n" %(averageWaitTime))
+    outFile.write("-- average turnaround time: %.3f ms\n" %(averageTurnaroundTime))
+    outFile.write("-- total number of context switches: %d\n" %(contextSwitchTotal))
+    outFile.write("-- total number of preemptions: %d\n" %(preemptionsTotal))
+
 '''
     Reset all values of processes between sorting algorithms
 '''
@@ -68,17 +79,27 @@ def main(seed, lambdaED, upperBound, n, tCS, alpha, timeSlice, rrBeginning):
     '''
         All the sorting algorithms
     '''
+    outFile = open("simout.txt", "w")
+
     printProcesses(processes)
-    sjf.main(processes, tCS, alpha) #Shortest Job First
+    avgCPUBurstTime, avgWaitTime, avgTurnTime, contextSwitchTotal = sjf.main(processes, tCS, alpha) #Shortest Job First
+    calculateAverage(outFile, "SJF", avgCPUBurstTime, avgWaitTime, avgTurnTime, contextSwitchTotal, 0)
     processes = resetProcesses(processes, lambdaED)
+
     printProcesses(processes)
-    srt.main(processes, tCS, alpha) #Shortest Remaining First
+    avgCPUBurstTime, avgWaitTime, avgTurnTime, contextSwitchTotal = srt.main(processes, tCS, alpha) #Shortest Remaining First
+    calculateAverage(outFile, "SRT", avgCPUBurstTime, avgWaitTime, avgTurnTime, contextSwitchTotal, 0)
     processes = resetProcesses(processes, lambdaED)
+    
     printProcesses(processes)
-    fcfs.main(processes, tCS) #First Come First Serve
+    avgCPUBurstTime, avgWaitTime, avgTurnTime, contextSwitchTotal = fcfs.main(processes, tCS) #First Come First Serve
+    calculateAverage(outFile, "FCFS", avgCPUBurstTime, avgWaitTime, avgTurnTime, contextSwitchTotal, 0)
     processes = resetProcesses(processes, lambdaED)
+    
     printProcesses(processes)
     #rr.main(processes, rrBeginning, timeSlice, tCS) #Round Robin
+
+    outFile.close()
 
 '''
 Parse arguments

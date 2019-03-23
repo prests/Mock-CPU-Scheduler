@@ -41,6 +41,13 @@ def event(eventType, queue, process, t):
     FCFS algorithm
 '''
 def main(processes, tCS):
+    burstTimeTotal = 0 #Total burst time for all processes
+    waitTimeTotal = 0 #Total wait time for all processes
+    turnaroundTimeTotal = 0 #Total turnaround time for all processes
+    contextSwitchTotal = 0 #Total number of context switches when running algorithm
+    totalBursts = 0
+    for i in processes:
+        totalBursts += i.cpuBurstNum
     queue = []
     currentProcess = None
     t = 0
@@ -69,6 +76,7 @@ def main(processes, tCS):
                     event("cpuStart", queue, currentProcess, t)
                     contextSwitchIn = False #mark done context switching
                     currentProcess.startTime = t #set start time of process
+                    contextSwitchTotal += 1
                 else:
                     if(not contextSwitchIn and not contextSwitchOut and len(queue) > 0): #start context switch to add process in
                         contextSwitchIn = True
@@ -77,6 +85,10 @@ def main(processes, tCS):
                 if(t == currentProcess.startTime + currentProcess.cpuBurstTimes[currentProcess.completed] and not contextSwitchOut): #If CPU burst or I/O block is finished
                     currentProcess.completed += 1
                     if(currentProcess.completed == currentProcess.cpuBurstNum): #Last cpu burst of process finished
+                        burstTimeTotal += currentProcess.cpuBurstTimes[currentProcess.completed]
+                        waitTimeTotal += currentProcess.waitTime
+                        currentProcess.waitTime = 0
+                        turnaroundTimeTotal += (t-currentProcess.arrivalTime) + tCS
                         event("terminated", queue, currentProcess, t)
                         completed += 1
                         currentProcess.state = 5
@@ -85,6 +97,9 @@ def main(processes, tCS):
                             t += 2
                             break
                     else: #start blocking on I/O
+                        burstTimeTotal += currentProcess.cpuBurstTimes[currentProcess.completed]
+                        waitTimeTotal += currentProcess.waitTime
+                        currentProcess.waitTime = 0
                         event("cpuFinish", queue, currentProcess, t)
                         event("ioStart", queue, currentProcess, t)
                         currentProcess.state = 4
@@ -99,5 +114,14 @@ def main(processes, tCS):
                 queue.append(i)
                 event("ioFinish", queue, i, t)
 
+        for i in processes:
+            if(i.state == 3):
+                i.waitTime += 1
         t += 1 #Increment time
     print("time %dms: Simulator ended for FCFS [Q <empty>]" % t)
+
+
+    averageCPUBurstTime = round(burstTimeTotal/float(totalBursts), 3)
+    averageWaitTime = round(waitTimeTotal/float(totalBursts), 3)
+    averageTurnaroundTime = round(turnaroundTimeTotal/float(len(processes)), 3)
+    return averageCPUBurstTime, averageWaitTime, averageTurnaroundTime, contextSwitchTotal
