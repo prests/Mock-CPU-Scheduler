@@ -18,17 +18,18 @@
 '''
 class Process(object):
     def __init__(self, arrive, status, cpuBurstNumber, cpuBurstTimes, newName, Tau):
-        self.arrivalTime = arrive
-        self.state = status
+        self.arrivalTime = arrive             # Time the process arrives to the scheduler
+        self.state = status                   # See above for states
         self.cpuBurstNum = cpuBurstNumber     # total bursts process will have (including io bursts)
         self.cpuBurstTimes = cpuBurstTimes    # list of all times the CPU and IO alternated
         self.completed = 0                    # num of bursts that the process has completed
-        self.waitTime = 0                     
-        self.remainingTime = 0
-        self.name = newName
-        self.startTime = 0
-        self.tau = Tau
-        self.preemptions = 0
-        self.currentPrempt = False
+        self.waitTime = 0                     # Wait time for a CPU Burst
+        self.remainingTime = 0                # Time needed to finish a CPU burst. Used for formating
+        self.name = newName                   # Name of process
+        self.startTime = 0                    # Start when a process starts using the CPU
+        self.tau = Tau                        # Tau value for a process. Recalculated after each burst
+        self.preemptions = 0                  # Number of preemptions a CPU burst encounters
+        self.currentPrempt = False            # Did the CPU burst encounter a Preemptions? This is for print outputs for submitty
+        self.turnaroundStart = -1             # Sets that start value of the single CPU burst
     def changeState(self, status):
         self.state = status

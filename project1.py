@@ -59,7 +59,8 @@ def main(seed, lambdaED, upperBound, n, tCS, alpha, timeSlice, rrBeginning):
     r = rand48.Rand48(0)
     r.srand(seed)
     processes = []
-    alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ" #Process names
+
     '''
         Get all the processes from parameters
     '''
@@ -79,27 +80,28 @@ def main(seed, lambdaED, upperBound, n, tCS, alpha, timeSlice, rrBeginning):
     '''
         All the sorting algorithms
     '''
-    outFile = open("simout.txt", "w")
+    outFile = open("simout.txt", "w") #Open file or create file for algorithm average output
 
-    printProcesses(processes)
+    printProcesses(processes) #Print all the processes
     avgCPUBurstTime, avgWaitTime, avgTurnTime, contextSwitchTotal = sjf.main(processes, tCS, alpha) #Shortest Job First
-    calculateAverage(outFile, "SJF", avgCPUBurstTime, avgWaitTime, avgTurnTime, contextSwitchTotal, 0)
-    processes = resetProcesses(processes, lambdaED)
+    calculateAverage(outFile, "SJF", avgCPUBurstTime, avgWaitTime, avgTurnTime, contextSwitchTotal, 0) #Prints average for algorithm (wait time, turnaround time, ect.)
+    processes = resetProcesses(processes, lambdaED) #Reset process information inbetween algorithms
 
-    printProcesses(processes)
+    printProcesses(processes) #Print all the processes
     avgCPUBurstTime, avgWaitTime, avgTurnTime, contextSwitchTotal, preemptionsTotal = srt.main(processes, tCS, alpha) #Shortest Remaining First
-    calculateAverage(outFile, "SRT", avgCPUBurstTime, avgWaitTime, avgTurnTime, contextSwitchTotal, preemptionsTotal)
-    processes = resetProcesses(processes, lambdaED)
+    calculateAverage(outFile, "SRT", avgCPUBurstTime, avgWaitTime, avgTurnTime, contextSwitchTotal, preemptionsTotal) #Prints average for algorithm (wait time, turnaround time, ect.)
+    processes = resetProcesses(processes, lambdaED) #Reset process information inbetween algorithms
     
-    printProcesses(processes)
+    printProcesses(processes) #Print all the processes
     avgCPUBurstTime, avgWaitTime, avgTurnTime, contextSwitchTotal = fcfs.main(processes, tCS) #First Come First Serve
-    calculateAverage(outFile, "FCFS", avgCPUBurstTime, avgWaitTime, avgTurnTime, contextSwitchTotal, 0)
-    processes = resetProcesses(processes, lambdaED)
+    calculateAverage(outFile, "FCFS", avgCPUBurstTime, avgWaitTime, avgTurnTime, contextSwitchTotal, 0) #Prints average for algorithm (wait time, turnaround time, ect.)
+    processes = resetProcesses(processes, lambdaED) #Reset process information inbetween algorithms
     
-    printProcesses(processes)
+    printProcesses(processes) #Print all the processes
     #rr.main(processes, rrBeginning, timeSlice, tCS) #Round Robin
+    calculateAverage(outFile, "RR", avgCPUBurstTime, avgWaitTime, avgTurnTime, contextSwitchTotal, 0) #Prints average for algorithm (wait time, turnaround time, ect.)
 
-    outFile.close()
+    outFile.close() #close simout.txt file
 
 '''
 Parse arguments
