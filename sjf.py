@@ -62,25 +62,6 @@ def main(processes, tCS, alpha):
     contextSwitchOut = False                        # Is the process context switching out?
     print("time %dms: Simulator started for FCFS [Q <empty>]" % t)
     while(True):
-        for i in processes:
-            if(t == i.arrivalTime and i.state == 0):                                                    # Marks if a process arrives and checks if it can cut queue
-                
-                if(len(queue) == 0):                                                                    # Queue is empty so add to ready queue
-                    i.changeState(3)                                                                    # Marks it as ready
-                    queue.append(i)
-                    event("arrival", queue, i, t)
-                else:
-                    for j in range(0,len(queue)):                                                       # Check if arriving process can cut ready queue
-                        if(i.tau < queue[j].tau):                                                       # Tau is shorter and can cut  
-                            i.changeState(3)                                                            # Marks it as ready
-                            queue.insert(j, i)
-                            event("arrival", queue, i, t)
-                            break
-                    if(i.state != 3):                                                                   # Arriving process has largest Tau in list
-                        i.changeState(3)                                                                # Marks it as ready
-                        queue.append(i)
-                        event("arrival", queue, i, t)
-
         if(contextSwitchOut and (t == contextSwitchTime + int(tCS/2))):                                 # Context switching to get a process out of CPU
             contextSwitchOut = False
             currentProcess = None
@@ -164,6 +145,25 @@ def main(processes, tCS, alpha):
                         i.changeState(3)                                                                # Marks it as ready
                         queue.append(i)
                         event("ioFinish", queue, i, t)
+
+        for i in processes:
+            if(t == i.arrivalTime and i.state == 0):                                                    # Marks if a process arrives and checks if it can cut queue
+                
+                if(len(queue) == 0):                                                                    # Queue is empty so add to ready queue
+                    i.changeState(3)                                                                    # Marks it as ready
+                    queue.append(i)
+                    event("arrival", queue, i, t)
+                else:
+                    for j in range(0,len(queue)):                                                       # Check if arriving process can cut ready queue
+                        if(i.tau < queue[j].tau):                                                       # Tau is shorter and can cut  
+                            i.changeState(3)                                                            # Marks it as ready
+                            queue.insert(j, i)
+                            event("arrival", queue, i, t)
+                            break
+                    if(i.state != 3):                                                                   # Arriving process has largest Tau in list
+                        i.changeState(3)                                                                # Marks it as ready
+                        queue.append(i)
+                        event("arrival", queue, i, t)
 
         for i in processes:                                                                             # Checks if process is waiting in ready queue
             if(i.state == 3):                                                                           # Process is waiting for increment wait time

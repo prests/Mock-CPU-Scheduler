@@ -61,13 +61,6 @@ def main(processes, tCS):
 
     print("time %dms: Simulator started for FCFS [Q <empty>]" % t)
     while(True):
-
-        for i in processes:
-            if(t == i.arrivalTime and i.state == 0):                                        # Marks if a process arrives
-                i.changeState(3)                                                            # Marks it as ready
-                queue.append(i)
-                event("arrival", queue, i, t)
-
         if(contextSwitchOut and (t == contextSwitchTime + int(tCS/2))):                     # Context switching to get a process out of CPU
             contextSwitchOut = False
             currentProcess = None
@@ -135,6 +128,12 @@ def main(processes, tCS):
                 i.state = 3
                 queue.append(i)
                 event("ioFinish", queue, i, t)
+        
+        for i in processes:                                                                             # Checks if a process is arriving
+            if(t == i.arrivalTime and i.state == 0):                                                    # Marks if a process arrives
+                i.changeState(3)                                                                        # Marks it as ready
+                queue.append(i)
+                event("arrival", queue, i, t)
 
         for i in processes:                                                                             # Check if process is waiting in ready queue
             if(i.state == 3):

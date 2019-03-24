@@ -70,40 +70,6 @@ def main(processes, tCS, alpha):
     contextSwitchOut = False                        # Is the process context switching out?
     print("time %dms: Simulator started for SRT [Q <empty>]" % t)
     while(True):
-        for i in processes:
-            if(t == i.arrivalTime and i.state == 0):                                                                                            # Marks if a process arrives and checks if it can cut queue
-                if(currentProcess is not None and (i.tau < currentProcess.tau) and not contextSwitchOut):                                       # Arrival preempts current process
-                    if(currentProcess.currentPrempt):                                                                                           # Formatting for calculating time remaining in a preemptions
-                        currentProcess.remainingTime -= (t - currentProcess.startTime)
-                    else:
-                        currentProcess.remainingTime = currentProcess.cpuBurstTimes[currentProcess.completed] - (t - currentProcess.startTime)
-                    currentProcess.currentPrempt = True                                                                                         
-                    currentProcess.preemptions += 1
-                    
-                    event("arrivalPreempt", queue, i, t, currentProcess)
-                    queue.insert(0,currentProcess)                                                                                              # Adds current process to front of ready queue
-                    queue.insert(0,i)                                                                                                           # Adds preempted process to front of queue to get popped
-                    
-                    contextSwitchOut = True                                                                                                     # Context is switching out
-                    contextSwitchTime = t                                                                                                       # Start time of context switch
-                    
-                    preemptionTotal += 1                                                                                                        # Increase total preemptions for algorithm
-                elif(len(queue) == 0):                                                                                                          # queue is empty
-                    i.changeState(3)                                                                                                            # Marks it as ready
-                    queue.append(i)
-                    event("arrival", queue, i, t, "")
-                else:
-                    for j in range(0,len(queue)):                                                                                               # Check if arriving process can cut ready queue
-                        if(i.tau < queue[j].tau):                                                                                               # Process has smaller tau (cut line)
-                            i.changeState(3)                                                                                                    # Marks arrived process as ready
-                            queue.insert(j, i)
-                            event("arrival", queue, i, t, "")
-                            break
-                    if(i.state != 3):                                                                                                           # Arriving process has largest Tau in list
-                        i.changeState(3)                                                                                                        # Marks it as ready
-                        queue.append(i)
-                        event("arrival", queue, i, t, "")
-
         if(contextSwitchOut and (t == contextSwitchTime + int(tCS/2))):                                                                         # Context switching to get a process out of CPU
             contextSwitchOut = False
             currentProcess = None
@@ -208,6 +174,40 @@ def main(processes, tCS, alpha):
                         i.changeState(3)                                            # Marks it as ready
                         queue.append(i)
                         event("ioFinish", queue, i, t, "")
+
+        for i in processes:
+            if(t == i.arrivalTime and i.state == 0):                                                                                            # Marks if a process arrives and checks if it can cut queue
+                if(currentProcess is not None and (i.tau < currentProcess.tau) and not contextSwitchOut):                                       # Arrival preempts current process
+                    if(currentProcess.currentPrempt):                                                                                           # Formatting for calculating time remaining in a preemptions
+                        currentProcess.remainingTime -= (t - currentProcess.startTime)
+                    else:
+                        currentProcess.remainingTime = currentProcess.cpuBurstTimes[currentProcess.completed] - (t - currentProcess.startTime)
+                    currentProcess.currentPrempt = True                                                                                         
+                    currentProcess.preemptions += 1
+                    
+                    event("arrivalPreempt", queue, i, t, currentProcess)
+                    queue.insert(0,currentProcess)                                                                                              # Adds current process to front of ready queue
+                    queue.insert(0,i)                                                                                                           # Adds preempted process to front of queue to get popped
+                    
+                    contextSwitchOut = True                                                                                                     # Context is switching out
+                    contextSwitchTime = t                                                                                                       # Start time of context switch
+                    
+                    preemptionTotal += 1                                                                                                        # Increase total preemptions for algorithm
+                elif(len(queue) == 0):                                                                                                          # queue is empty
+                    i.changeState(3)                                                                                                            # Marks it as ready
+                    queue.append(i)
+                    event("arrival", queue, i, t, "")
+                else:
+                    for j in range(0,len(queue)):                                                                                               # Check if arriving process can cut ready queue
+                        if(i.tau < queue[j].tau):                                                                                               # Process has smaller tau (cut line)
+                            i.changeState(3)                                                                                                    # Marks arrived process as ready
+                            queue.insert(j, i)
+                            event("arrival", queue, i, t, "")
+                            break
+                    if(i.state != 3):                                                                                                           # Arriving process has largest Tau in list
+                        i.changeState(3)                                                                                                        # Marks it as ready
+                        queue.append(i)
+                        event("arrival", queue, i, t, "")
 
         for i in processes:                                                         # Check if a process is waiting in ready queue
             if(i.state == 3):
