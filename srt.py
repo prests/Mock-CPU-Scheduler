@@ -92,9 +92,12 @@ def main(processes, tCS, alpha):
                     contextSwitchTime = t                                                                                                       # Start time of context switch
                     
                     preemptionTotal += 1                                                                                                        # Increase total preemptions for algorithm
+                    i.turnaroundStart = t                                                                                                       # Reset turnaroundStart for given process
                 elif(len(queue) == 0):                                                                                                          # queue is empty
                     i.changeState(3)                                                                                                            # Marks it as ready
                     queue.append(i)
+                    i.turnaroundStart = t                                                                                                       # Reset turnaroundStart for given process
+                    
                     if(t<1000):
                         event("arrival", queue, i, t, "")
                 else:
@@ -102,6 +105,7 @@ def main(processes, tCS, alpha):
                         if((i.tau < queue[j].tau) or ((i.tau == queue[j].tau) and (i.name < queue[j].name))):   # Tau is shorter and can cut  
                             i.changeState(3)                                                                                                    # Marks arrived process as ready
                             queue.insert(j, i)
+                            i.turnaroundStart = t                                                                                               # Reset turnaroundStart for given process
                             if(t<1000):
                                 event("arrival", queue, i, t, "")
                             break

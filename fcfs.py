@@ -68,6 +68,7 @@ def main(processes, tCS):
                 '''
                 i.changeState(3)                                                                        # Marks it as ready
                 queue.append(i)
+                i.turnaroundStart = t
                 if(t<1000):
                     event("arrival", queue, i, t)
 
