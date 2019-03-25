@@ -66,9 +66,7 @@ def main(seed, lambdaED, upperBound, n, tCS, alpha, timeSlice, rrBeginning):
     '''
     for i in range(0, n):
         arrivalTime = math.floor(expRandom.expDist(lambdaED, upperBound, r))
-        print(arrivalTime)
         cpuBurstNumber = math.floor(r.drand()*100)+1
-        print(cpuBurstNumber)
         cpuBurstTimes = []
         for j in range(0, (cpuBurstNumber-1)*2+1):
             cpuBurstTimes.append(math.ceil(expRandom.expDist(lambdaED, upperBound, r)))
