@@ -6,9 +6,9 @@ import math
 
 #Our algorithms
 import fcfs
-#import rr
-#import sjf
-#import rr
+import rr
+import sjf
+import rr
 import sjf
 import srt
 
@@ -80,28 +80,28 @@ def main(seed, lambdaED, upperBound, n, tCS, alpha, timeSlice, rrBeginning):
     '''
         All the sorting algorithms
     '''
-    outFile = open("simout.txt", "w") #Open file or create file for algorithm average output
+    outFile = open("simout.txt", "w")                                                                                                   #Open file or create file for algorithm average output
 
-    printProcesses(processes) #Print all the processes
-    avgCPUBurstTime, avgWaitTime, avgTurnTime, contextSwitchTotal = sjf.main(processes, tCS, alpha) #Shortest Job First
-    calculateAverage(outFile, "SJF", avgCPUBurstTime, avgWaitTime, avgTurnTime, contextSwitchTotal, 0) #Prints average for algorithm (wait time, turnaround time, ect.)
-    processes = resetProcesses(processes, lambdaED) #Reset process information inbetween algorithms
+    printProcesses(processes)                                                                                                           #Print all the processes
+    avgCPUBurstTime, avgWaitTime, avgTurnTime, contextSwitchTotal = sjf.main(processes, tCS, alpha)                                     #Shortest Job First
+    calculateAverage(outFile, "SJF", avgCPUBurstTime, avgWaitTime, avgTurnTime, contextSwitchTotal, 0)                                  #Prints average for algorithm (wait time, turnaround time, ect.)
+    processes = resetProcesses(processes, lambdaED)                                                                                     #Reset process information inbetween algorithms
 
-    printProcesses(processes) #Print all the processes
-    avgCPUBurstTime, avgWaitTime, avgTurnTime, contextSwitchTotal, preemptionsTotal = srt.main(processes, tCS, alpha) #Shortest Remaining First
-    calculateAverage(outFile, "SRT", avgCPUBurstTime, avgWaitTime, avgTurnTime, contextSwitchTotal, preemptionsTotal) #Prints average for algorithm (wait time, turnaround time, ect.)
-    processes = resetProcesses(processes, lambdaED) #Reset process information inbetween algorithms
+    printProcesses(processes)                                                                                                           #Print all the processes
+    avgCPUBurstTime, avgWaitTime, avgTurnTime, contextSwitchTotal, preemptionsTotal = srt.main(processes, tCS, alpha)                   #Shortest Remaining First
+    calculateAverage(outFile, "SRT", avgCPUBurstTime, avgWaitTime, avgTurnTime, contextSwitchTotal, preemptionsTotal)                   #Prints average for algorithm (wait time, turnaround time, ect.)
+    processes = resetProcesses(processes, lambdaED)                                                                                     #Reset process information inbetween algorithms
     
-    printProcesses(processes) #Print all the processes
-    avgCPUBurstTime, avgWaitTime, avgTurnTime, contextSwitchTotal = fcfs.main(processes, tCS) #First Come First Serve
-    calculateAverage(outFile, "FCFS", avgCPUBurstTime, avgWaitTime, avgTurnTime, contextSwitchTotal, 0) #Prints average for algorithm (wait time, turnaround time, ect.)
-    processes = resetProcesses(processes, lambdaED) #Reset process information inbetween algorithms
+    printProcesses(processes)                                                                                                           #Print all the processes
+    avgCPUBurstTime, avgWaitTime, avgTurnTime, contextSwitchTotal = fcfs.main(processes, tCS)                                           #First Come First Serve
+    calculateAverage(outFile, "FCFS", avgCPUBurstTime, avgWaitTime, avgTurnTime, contextSwitchTotal, 0)                                 #Prints average for algorithm (wait time, turnaround time, ect.)
+    processes = resetProcesses(processes, lambdaED)                                                                                     #Reset process information inbetween algorithms
     
-    printProcesses(processes) #Print all the processes
-    #rr.main(processes, rrBeginning, timeSlice, tCS) #Round Robin
-    calculateAverage(outFile, "RR", avgCPUBurstTime, avgWaitTime, avgTurnTime, contextSwitchTotal, 0) #Prints average for algorithm (wait time, turnaround time, ect.)
+    printProcesses(processes)                                                                                                           #Print all the processes
+    avgCPUBurstTime, avgWaitTime, avgTurnTime, contextSwitchTotal, preemptionsTotal = rr.main(processes, rrBeginning, timeSlice, tCS)   #Round Robin
+    calculateAverage(outFile, "RR", avgCPUBurstTime, avgWaitTime, avgTurnTime, contextSwitchTotal, preemptionsTotal)                    #Prints average for algorithm (wait time, turnaround time, ect.)
 
-    outFile.close() #close simout.txt file
+    outFile.close()                                                                                                                     #close simout.txt file
 
 '''
 Parse arguments
@@ -179,12 +179,12 @@ if __name__ == '__main__':
     #Checking queue order for Round Robin if provided 
     rrBeginning = False
     if(len(sys.argv) == 9):
-        if(sys.argv[8] == "BEGGINNING"):
+        if(sys.argv[8] == "BEGINNING"):
             rrBeginning = True
         elif(sys.argv[8] == "END"):
             rrBeginning = False
         else:
-            print("Invalid queue arrival for Round Robin check argument 9 (BEGGINING/END)")
+            print("Invalid queue arrival for Round Robin check argument 9 (BEGINING/END)")
             sys.exit()
     '''
     seed = 70
@@ -194,5 +194,5 @@ if __name__ == '__main__':
     tCS = 8
     alpha = 0.5
     timeSlice = 80
-    rrBeginning = "BEGGINNING"
+    rrBeginning = "END"
     main(seed, lambdaED, upperBound, n, tCS, alpha, timeSlice, rrBeginning)

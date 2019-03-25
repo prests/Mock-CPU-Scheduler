@@ -70,6 +70,9 @@ def main(processes, tCS, alpha):
             
             if(currentProcess is None):                                                                 # Start a process if nothing running
                 if(contextSwitchIn and (t == contextSwitchTime + int(tCS/2))):                          # Account for context switching
+                    '''
+                        CPU Burst Starting
+                    '''
                     currentProcess = queue.pop(0)                                                       # Take process off ready queue
                     currentProcess.changeState(2)
                     event("cpuStart", queue, currentProcess, t)
@@ -84,9 +87,14 @@ def main(processes, tCS, alpha):
                         contextSwitchTime = t
             else:
                 if(t == currentProcess.startTime + currentProcess.cpuBurstTimes[currentProcess.completed] and not contextSwitchOut): #If CPU burst or I/O block is finished
+                    '''
+                        CPU Burst Completed
+                    '''
                     currentProcess.completed += 1
                     if(currentProcess.completed == currentProcess.cpuBurstNum):                         # Last cpu burst of process finished
-                        
+                        '''
+                            Process Completed
+                        '''
                         burstTimeTotal += currentProcess.cpuBurstTimes[currentProcess.completed]        # Add burst time to total
                         
                         waitTimeTotal += currentProcess.waitTime                                        # Add wait time to total
@@ -102,10 +110,15 @@ def main(processes, tCS, alpha):
                         currentProcess = None
                         
                         if(completed == len(processes)):                                                # All processes are done
-                            t += 2
+                            '''
+                                All Processes Completed
+                            '''
+                            t += tCS/2
                             break
                     else:                                                                               # Burst is done so start blocking on I/O
-                        
+                        '''
+                            I/O Blocking Starting
+                        '''
                         burstTimeTotal += currentProcess.cpuBurstTimes[currentProcess.completed]        # Add burst time to total
                         
                         waitTimeTotal += currentProcess.waitTime                                        # Add wait time to total
@@ -128,7 +141,9 @@ def main(processes, tCS, alpha):
                 
         for i in processes:                                                                             # Check if a process is finished blocking on I/O
             if(i.state == 4 and (t == i.startTime + i.cpuBurstTimes[i.completed])):                     # Process finished I/O blocking
-                
+                '''
+                    I/O Blocking Completed
+                '''
                 if(len(queue) == 0):                                                                    # Queue is empty add process to rady queue
                     i.changeState(3)                                                                    # Marks it as ready
                     queue.append(i)
@@ -148,7 +163,9 @@ def main(processes, tCS, alpha):
 
         for i in processes:
             if(t == i.arrivalTime and i.state == 0):                                                    # Marks if a process arrives and checks if it can cut queue
-                
+                '''
+                    Process Arrival
+                '''
                 if(len(queue) == 0):                                                                    # Queue is empty so add to ready queue
                     i.changeState(3)                                                                    # Marks it as ready
                     queue.append(i)
@@ -169,7 +186,7 @@ def main(processes, tCS, alpha):
             if(i.state == 3):                                                                           # Process is waiting for increment wait time
                 i.waitTime += 1
         t += 1                                                                                          # Increment time
-    print("time %dms: Simulator ended for SJF [Q <empty>]" % t)
+    print("time %dms: Simulator ended for SJF [Q <empty>]\n" % t)
 
 
     averageCPUBurstTime = round(burstTimeTotal/float(totalBursts), 3)               # Average burst time for algorithm

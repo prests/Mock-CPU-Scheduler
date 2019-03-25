@@ -28,7 +28,7 @@ def event(eventType, queue, process, t, preempt):
         print("time %dms: Process %s (tau %dms) arrived and will preempt %s %s" %(t, process.name, process.tau, preempt.name, queueStr))
     elif(eventType == "cpuStart"):
         if(process.currentPrempt):
-            print("time %dms: Process %s started using the CPU with %dms remaining %s" %(t, process.name, process.cpuBurstTimes[process.completed], queueStr))
+            print("time %dms: Process %s started using the CPU with %dms remaining %s" %(t, process.name, process.remainingTime, queueStr))
         else:
             print("time %dms: Process %s started using the CPU for %dms burst %s" %(t, process.name, process.cpuBurstTimes[process.completed], queueStr))
     elif(eventType == "cpuFinish"):
@@ -77,7 +77,9 @@ def main(processes, tCS, alpha):
         if(len(queue) > 0 or currentProcess is not None):                                                                                       # If there is a process running or there are ready processes
             if(currentProcess is None):                                                                                                         # Start a process if nothing running
                 if(contextSwitchIn and (t == contextSwitchTime + int(tCS/2))):                                                                  # Account for context switching in
-                    
+                    '''
+                        CPU Burst Starting
+                    '''
                     currentProcess = queue.pop(0)                                                                                               # Take process off ready queue
                     currentProcess.changeState(2)
                     event("cpuStart", queue, currentProcess, t, "")
@@ -94,13 +96,17 @@ def main(processes, tCS, alpha):
                         contextSwitchTime = t
             else:
                 if((t == currentProcess.startTime + currentProcess.cpuBurstTimes[currentProcess.completed] and not contextSwitchOut and not currentProcess.currentPrempt) or (t == currentProcess.startTime + currentProcess.remainingTime and not contextSwitchOut and currentProcess.currentPrempt)): # If CPU burst or I/O block is finished
-                    
+                    '''
+                        CPU Burst Completed
+                    '''
                     currentProcess.completed += 1                                                                                               # Increase bursts completed
                     currentProcess.currentPrempt = False                                                                                        # Burst is no longer preempting
                     currentProcess.remainingTime = 0                                                                                            # Reset remaining time
                     
                     if(currentProcess.completed == currentProcess.cpuBurstNum):                                                                 # Last CPU burst of process finished
-                        
+                        '''
+                            Process Completed
+                        '''
                         burstTimeTotal += currentProcess.cpuBurstTimes[currentProcess.completed]                                                # Add burst time to average                                               
                         
                         waitTimeTotal += currentProcess.waitTime                                                                                # Add wait time to average
@@ -115,10 +121,15 @@ def main(processes, tCS, alpha):
                         currentProcess.state = 5
                         currentProcess = None
                         if(completed == len(processes)):                                                                                        # All processes are done
-                            t += 2
+                            '''
+                                All Processes Completed
+                            '''
+                            t += tCS/2
                             break
                     else:                                                                                                                       # Finished a burst so start blocking on I/O
-                        
+                        '''
+                            I/O Blocking Starting
+                        '''
                         burstTimeTotal += currentProcess.cpuBurstTimes[currentProcess.completed]                                                # Add burst time to average
                         
                         waitTimeTotal += currentProcess.waitTime                                                                                # Add wait time to average
@@ -142,6 +153,9 @@ def main(processes, tCS, alpha):
                 
         for i in processes:                                                                                                                             # Checking if a process has finished I/O burst
             if(i.state == 4 and (t == i.startTime + i.cpuBurstTimes[i.completed])):                                                                     # Finished I/O blocking
+                '''
+                    I/O Blocking Completed
+                '''
                 if(currentProcess is not None and (i.tau < currentProcess.tau) and not contextSwitchOut):                                               # I/O process preempts current process
                     
                     if(currentProcess.currentPrempt):                                                                                                   # Formatting for calculating time remaining in a preemptions
@@ -177,6 +191,9 @@ def main(processes, tCS, alpha):
 
         for i in processes:
             if(t == i.arrivalTime and i.state == 0):                                                                                            # Marks if a process arrives and checks if it can cut queue
+                '''
+                    Process Arrival
+                '''
                 if(currentProcess is not None and (i.tau < currentProcess.tau) and not contextSwitchOut):                                       # Arrival preempts current process
                     if(currentProcess.currentPrempt):                                                                                           # Formatting for calculating time remaining in a preemptions
                         currentProcess.remainingTime -= (t - currentProcess.startTime)
@@ -215,7 +232,7 @@ def main(processes, tCS, alpha):
         
         t += 1                                                                      # Increment time
     
-    print("time %dms: Simulator ended for SRT [Q <empty>]" % t)
+    print("time %dms: Simulator ended for SRT [Q <empty>]\n" % t)
 
 
     averageCPUBurstTime = round(burstTimeTotal/float(totalBursts), 3)               # Average burst time for algorithm
