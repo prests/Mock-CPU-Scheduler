@@ -32,7 +32,7 @@ def event(eventType, queue, process, t, preempt):
         else:
             print("time %dms: Process %s started using the CPU for %dms burst %s" %(t, process.name, process.cpuBurstTimes[process.completed], queueStr))
     elif(eventType == "cpuFinish"):
-        print("time %dms: Process %s completed a CPU burst; %d to go %s" %(t, process.name, process.cpuBurstNum-process.completed, queueStr))
+        print("time %dms: Process %s completed a CPU burst; %d bursts to go %s" %(t, process.name, process.cpuBurstNum-process.burstComplete, queueStr))
     elif(eventType == "ioStart"):
         print("time %dms: Process %s switching out of CPU; will block on I/O until time %dms %s" %(t, process.name, t+process.cpuBurstTimes[process.completed], queueStr))
     elif(eventType == "ioFinish"):
@@ -42,7 +42,7 @@ def event(eventType, queue, process, t, preempt):
     elif(eventType == "terminated"):
         print("time %dms: Process %s terminated %s" %(t, process.name, queueStr))
     elif(eventType == "newTau"):
-        print("time %dms: Recalculated tau = %dms for Process %s %s" %(t, process.tau, process.name, queueStr))
+        print("time %dms: Recalculated tau = %dms for process %s %s" %(t, process.tau, process.name, queueStr))
     else:
         print("I'm not sure how you got here...")
 
@@ -70,6 +70,47 @@ def main(processes, tCS, alpha):
     contextSwitchOut = False                        # Is the process context switching out?
     print("time %dms: Simulator started for SRT [Q <empty>]" % t)
     while(True):
+        for i in processes:
+            if(t == i.arrivalTime and i.state == 0):                                                                                            # Marks if a process arrives and checks if it can cut queue
+                '''
+                    Process Arrival
+                '''
+                if(currentProcess is not None and (i.tau < currentProcess.tau) and not contextSwitchOut):                                       # Arrival preempts current process
+                    if(currentProcess.currentPrempt):                                                                                           # Formatting for calculating time remaining in a preemptions
+                        currentProcess.remainingTime -= (t - currentProcess.startTime)
+                    else:
+                        currentProcess.remainingTime = currentProcess.cpuBurstTimes[currentProcess.completed] - (t - currentProcess.startTime)
+                    currentProcess.currentPrempt = True                                                                                         
+                    currentProcess.preemptions += 1
+                    
+                    if(t<1000):
+                        event("arrivalPreempt", queue, i, t, currentProcess)
+                    queue.insert(0,currentProcess)                                                                                              # Adds current process to front of ready queue
+                    queue.insert(0,i)                                                                                                           # Adds preempted process to front of queue to get popped
+                    
+                    contextSwitchOut = True                                                                                                     # Context is switching out
+                    contextSwitchTime = t                                                                                                       # Start time of context switch
+                    
+                    preemptionTotal += 1                                                                                                        # Increase total preemptions for algorithm
+                elif(len(queue) == 0):                                                                                                          # queue is empty
+                    i.changeState(3)                                                                                                            # Marks it as ready
+                    queue.append(i)
+                    if(t<1000):
+                        event("arrival", queue, i, t, "")
+                else:
+                    for j in range(0,len(queue)):                                                                                               # Check if arriving process can cut ready queue
+                        if(i.tau < queue[j].tau):                                                                                               # Process has smaller tau (cut line)
+                            i.changeState(3)                                                                                                    # Marks arrived process as ready
+                            queue.insert(j, i)
+                            if(t<1000):
+                                event("arrival", queue, i, t, "")
+                            break
+                    if(i.state != 3):                                                                                                           # Arriving process has largest Tau in list
+                        i.changeState(3)                                                                                                        # Marks it as ready
+                        queue.append(i)
+                        if(t<1000):
+                            event("arrival", queue, i, t, "")
+
         if(contextSwitchOut and (t == contextSwitchTime + int(tCS/2))):                                                                         # Context switching to get a process out of CPU
             contextSwitchOut = False
             currentProcess = None
@@ -82,7 +123,8 @@ def main(processes, tCS, alpha):
                     '''
                     currentProcess = queue.pop(0)                                                                                               # Take process off ready queue
                     currentProcess.changeState(2)
-                    event("cpuStart", queue, currentProcess, t, "")
+                    if(t<1000):
+                        event("cpuStart", queue, currentProcess, t, "")
                     contextSwitchIn = False                                                                                                     # Mark done context switching
                     currentProcess.startTime = t                                                                                                # Set start time of process
                     
@@ -99,15 +141,16 @@ def main(processes, tCS, alpha):
                     '''
                         CPU Burst Completed
                     '''
+                    currentProcess.burstComplete += 1
                     currentProcess.completed += 1                                                                                               # Increase bursts completed
                     currentProcess.currentPrempt = False                                                                                        # Burst is no longer preempting
                     currentProcess.remainingTime = 0                                                                                            # Reset remaining time
                     
-                    if(currentProcess.completed == currentProcess.cpuBurstNum):                                                                 # Last CPU burst of process finished
+                    if(currentProcess.burstComplete == currentProcess.cpuBurstNum):                                                                 # Last CPU burst of process finished
                         '''
                             Process Completed
                         '''
-                        burstTimeTotal += currentProcess.cpuBurstTimes[currentProcess.completed]                                                # Add burst time to average                                               
+                        burstTimeTotal += currentProcess.cpuBurstTimes[currentProcess.completed-1]                                                # Add burst time to average                                               
                         
                         waitTimeTotal += currentProcess.waitTime                                                                                # Add wait time to average
                         currentProcess.waitTime = 0                                                                                             # Reset process wait time
@@ -130,7 +173,7 @@ def main(processes, tCS, alpha):
                         '''
                             I/O Blocking Starting
                         '''
-                        burstTimeTotal += currentProcess.cpuBurstTimes[currentProcess.completed]                                                # Add burst time to average
+                        burstTimeTotal += currentProcess.cpuBurstTimes[currentProcess.completed-1]                                                # Add burst time to average
                         
                         waitTimeTotal += currentProcess.waitTime                                                                                # Add wait time to average
                         currentProcess.waitTime = 0                                                                                             # Reset process wait time
@@ -138,12 +181,14 @@ def main(processes, tCS, alpha):
                         turnaroundTimeTotal += (t-currentProcess.turnaroundStart) + tCS                                                         # Add turnaround time to average
                         currentProcess.turnaroundStart = -1                                                                                     # Reset burst turnaround time start
                         
-                        event("cpuFinish", queue, currentProcess, t, "")
+                        if(t<1000):
+                            event("cpuFinish", queue, currentProcess, t, "")
                         
                         currentProcess.tau = expAverage.nextTau(currentProcess.tau, alpha, currentProcess.cpuBurstTimes[currentProcess.completed-1])    # Recalculate tau
                         
-                        event("newTau", queue, currentProcess, t, "")
-                        event("ioStart", queue, currentProcess, t, "")
+                        if(t<1000):
+                            event("newTau", queue, currentProcess, t, "")
+                            event("ioStart", queue, currentProcess, t, "")
                         currentProcess.state = 4                                                                                                        # Set process to I/O blocking
                         currentProcess.startTime = t                                                                                                    # Set start time for I/O blocking
                     
@@ -156,6 +201,7 @@ def main(processes, tCS, alpha):
                 '''
                     I/O Blocking Completed
                 '''
+                i.completed += 1
                 if(currentProcess is not None and (i.tau < currentProcess.tau) and not contextSwitchOut):                                               # I/O process preempts current process
                     
                     if(currentProcess.currentPrempt):                                                                                                   # Formatting for calculating time remaining in a preemptions
@@ -164,7 +210,8 @@ def main(processes, tCS, alpha):
                         currentProcess.remainingTime = currentProcess.cpuBurstTimes[currentProcess.completed] - (t - currentProcess.startTime)
                     currentProcess.currentPrempt = True
                     currentProcess.preemptions += 1                                                                                                     # Add preemption to process
-                    event("ioPreempt", queue, i, t, currentProcess)
+                    if(t<1000):
+                        event("ioPreempt", queue, i, t, currentProcess)
                     
                     queue.insert(0,currentProcess)                                  # Add current process to ready queue due to preemption
                     queue.insert(0,i)                                               # Put preempting process for front of ready queue to get popped
@@ -173,58 +220,26 @@ def main(processes, tCS, alpha):
                     contextSwitchTime = t
                     preemptionTotal += 1                                            # Total preemptions increase
                 
-                elif(len(queue) == 0):                                              # Queue is empty adding I/O process to it
-                    i.changeState(3)                                                # Marks it as ready
+                elif(len(queue) == 0 and currentProcess is None and not contextSwitchOut and not contextSwitchIn):    # Queue is empty add process to ready queue
+                    i.changeState(3)                                                                    # Marks it as ready
                     queue.append(i)
-                    event("ioFinish", queue, i, t, "")
+                    contextSwitchIn = True
+                    contextSwitchTime = t
+                    if(t<1000):
+                        event("ioFinish", queue, i, t, "")
                 else:
                     for j in range(0,len(queue)):                                   # Check if arriving process can cut ready queue
                         if(i.tau < queue[j].tau):
                             i.changeState(3)                                        # Marks it as ready
                             queue.insert(j, i)
-                            event("ioFinish", queue, i, t, "")
+                            if(t<1000):
+                                event("ioFinish", queue, i, t, "")
                             break
                     if(i.state != 3):                                               # Arriving process has largest Tau in list
                         i.changeState(3)                                            # Marks it as ready
                         queue.append(i)
-                        event("ioFinish", queue, i, t, "")
-
-        for i in processes:
-            if(t == i.arrivalTime and i.state == 0):                                                                                            # Marks if a process arrives and checks if it can cut queue
-                '''
-                    Process Arrival
-                '''
-                if(currentProcess is not None and (i.tau < currentProcess.tau) and not contextSwitchOut):                                       # Arrival preempts current process
-                    if(currentProcess.currentPrempt):                                                                                           # Formatting for calculating time remaining in a preemptions
-                        currentProcess.remainingTime -= (t - currentProcess.startTime)
-                    else:
-                        currentProcess.remainingTime = currentProcess.cpuBurstTimes[currentProcess.completed] - (t - currentProcess.startTime)
-                    currentProcess.currentPrempt = True                                                                                         
-                    currentProcess.preemptions += 1
-                    
-                    event("arrivalPreempt", queue, i, t, currentProcess)
-                    queue.insert(0,currentProcess)                                                                                              # Adds current process to front of ready queue
-                    queue.insert(0,i)                                                                                                           # Adds preempted process to front of queue to get popped
-                    
-                    contextSwitchOut = True                                                                                                     # Context is switching out
-                    contextSwitchTime = t                                                                                                       # Start time of context switch
-                    
-                    preemptionTotal += 1                                                                                                        # Increase total preemptions for algorithm
-                elif(len(queue) == 0):                                                                                                          # queue is empty
-                    i.changeState(3)                                                                                                            # Marks it as ready
-                    queue.append(i)
-                    event("arrival", queue, i, t, "")
-                else:
-                    for j in range(0,len(queue)):                                                                                               # Check if arriving process can cut ready queue
-                        if(i.tau < queue[j].tau):                                                                                               # Process has smaller tau (cut line)
-                            i.changeState(3)                                                                                                    # Marks arrived process as ready
-                            queue.insert(j, i)
-                            event("arrival", queue, i, t, "")
-                            break
-                    if(i.state != 3):                                                                                                           # Arriving process has largest Tau in list
-                        i.changeState(3)                                                                                                        # Marks it as ready
-                        queue.append(i)
-                        event("arrival", queue, i, t, "")
+                        if(t<1000):
+                            event("ioFinish", queue, i, t, "")
 
         for i in processes:                                                         # Check if a process is waiting in ready queue
             if(i.state == 3):

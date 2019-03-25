@@ -46,6 +46,8 @@ def resetProcesses(processes, lambdaED):
         i.currentPrempt = False
         i.preemptions = 0
         i.state = 0
+        i.turnaroundStart = -1
+        i.burstComplete = 0
     return processes
 
 '''
@@ -53,7 +55,10 @@ def resetProcesses(processes, lambdaED):
 '''
 def printProcesses(processes):
     for i in processes:
-        print("Process %s [NEW] (arrival time %d ms) %d CPU bursts" %(i.name, i.arrivalTime, i.cpuBurstNum))
+        if(i.cpuBurstNum == 1):
+            print("Process %s [NEW] (arrival time %d ms) %d CPU burst" %(i.name, i.arrivalTime, i.cpuBurstNum))
+        else:
+            print("Process %s [NEW] (arrival time %d ms) %d CPU bursts" %(i.name, i.arrivalTime, i.cpuBurstNum))
 
 def main(seed, lambdaED, upperBound, n, tCS, alpha, timeSlice, rrBeginning):
     r = rand48.Rand48(0)
@@ -68,8 +73,14 @@ def main(seed, lambdaED, upperBound, n, tCS, alpha, timeSlice, rrBeginning):
         arrivalTime = math.floor(expRandom.expDist(lambdaED, upperBound, r))
         cpuBurstNumber = math.floor(r.drand()*100)+1
         cpuBurstTimes = []
+        ioburst = False
         for j in range(0, (cpuBurstNumber-1)*2+1):
-            cpuBurstTimes.append(math.ceil(expRandom.expDist(lambdaED, upperBound, r)))
+            if(ioburst):
+                cpuBurstTimes.append(math.ceil(expRandom.expDist(lambdaED, upperBound, r)) + (tCS/2))
+                ioburst = False
+            else:
+                cpuBurstTimes.append(math.ceil(expRandom.expDist(lambdaED, upperBound, r)))
+                ioburst = True
         
         tau = math.ceil(1/float(lambdaED))
         p = process.Process(arrivalTime, 0, cpuBurstNumber, cpuBurstTimes, alphabet[i], tau)

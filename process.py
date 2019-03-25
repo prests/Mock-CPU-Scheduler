@@ -31,5 +31,6 @@ class Process(object):
         self.preemptions = 0                  # Number of preemptions a CPU burst encounters
         self.currentPrempt = False            # Did the CPU burst encounter a Preemptions? This is for print outputs for submitty
         self.turnaroundStart = -1             # Sets that start value of the single CPU burst
+        self.burstComplete = 0                # Number of bursts completed (for submitty got lazy)
     def changeState(self, status):
         self.state = status
