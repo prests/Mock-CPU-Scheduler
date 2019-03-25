@@ -74,7 +74,7 @@ def main(processes, tCS, alpha):
                         event("arrival", queue, i, t)
                 else:
                     for j in range(0,len(queue)):                                                       # Check if arriving process can cut ready queue
-                        if(i.tau < queue[j].tau):                                                       # Tau is shorter and can cut  
+                        if((i.tau < queue[j].tau) or ((i.tau == queue[j].tau) and (i.name < queue[j].name))):   # Tau is shorter and can cut  
                             i.changeState(3)                                                            # Marks it as ready
                             queue.insert(j, i)
                             if(t<1000):
@@ -183,7 +183,7 @@ def main(processes, tCS, alpha):
                 else:
                     for j in range(0,len(queue)):                                                       # Check if arriving process can cut ready queue
                         
-                        if(i.tau < queue[j].tau):                                                       # Tau is less so it will cut process
+                        if((i.tau < queue[j].tau) or ((i.tau == queue[j].tau) and (i.name < queue[j].name))):   # Tau is shorter and can cut  
                             i.changeState(3)                                                            # Marks it as ready
                             queue.insert(j, i)
                             if(t<1000):

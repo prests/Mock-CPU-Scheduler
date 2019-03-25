@@ -75,7 +75,7 @@ def main(processes, tCS, alpha):
                 '''
                     Process Arrival
                 '''
-                if(currentProcess is not None and (i.tau < currentProcess.tau) and not contextSwitchOut):                                       # Arrival preempts current process
+                if(currentProcess is not None and ((i.tau < currentProcess.tau) or ((i.tau == currentProcess.tau) and (i.name < currentProcess.name))) and not contextSwitchOut):                                       # Arrival preempts current process
                     if(currentProcess.currentPrempt):                                                                                           # Formatting for calculating time remaining in a preemptions
                         currentProcess.remainingTime -= (t - currentProcess.startTime)
                     else:
@@ -99,7 +99,7 @@ def main(processes, tCS, alpha):
                         event("arrival", queue, i, t, "")
                 else:
                     for j in range(0,len(queue)):                                                                                               # Check if arriving process can cut ready queue
-                        if(i.tau < queue[j].tau):                                                                                               # Process has smaller tau (cut line)
+                        if((i.tau < queue[j].tau) or ((i.tau == queue[j].tau) and (i.name < queue[j].name))):   # Tau is shorter and can cut  
                             i.changeState(3)                                                                                                    # Marks arrived process as ready
                             queue.insert(j, i)
                             if(t<1000):
@@ -202,8 +202,8 @@ def main(processes, tCS, alpha):
                     I/O Blocking Completed
                 '''
                 i.completed += 1
-                if(currentProcess is not None and (i.tau < currentProcess.tau) and not contextSwitchOut):                                               # I/O process preempts current process
-                    
+                if(currentProcess is not None and ((i.tau < currentProcess.tau) or ((i.tau == currentProcess.tau) and (i.name < currentProcess.name))) and not contextSwitchOut):                                                
+                    i.changeState(3)
                     if(currentProcess.currentPrempt):                                                                                                   # Formatting for calculating time remaining in a preemptions
                         currentProcess.remainingTime -= (t - currentProcess.startTime)
                     else:
@@ -229,7 +229,7 @@ def main(processes, tCS, alpha):
                         event("ioFinish", queue, i, t, "")
                 else:
                     for j in range(0,len(queue)):                                   # Check if arriving process can cut ready queue
-                        if(i.tau < queue[j].tau):
+                        if((i.tau < queue[j].tau) or ((i.tau == queue[j].tau) and (i.name < queue[j].name))):   # Tau is shorter and can cut  
                             i.changeState(3)                                        # Marks it as ready
                             queue.insert(j, i)
                             if(t<1000):
