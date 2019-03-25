@@ -107,7 +107,6 @@ def main(seed, lambdaED, upperBound, n, tCS, alpha, timeSlice, rrBeginning):
 Parse arguments
 '''
 if __name__ == '__main__':
-    '''
     #Checking size of argument array
     if(len(sys.argv) < 8):
         print("Invalid number of arguments provided")
@@ -186,13 +185,5 @@ if __name__ == '__main__':
         else:
             print("Invalid queue arrival for Round Robin check argument 9 (BEGINING/END)")
             sys.exit()
-    '''
-    seed = 70
-    lambdaED = 0.001
-    upperBound = 3000
-    n = 10
-    tCS = 8
-    alpha = 0.5
-    timeSlice = 80
-    rrBeginning = "END"
+
     main(seed, lambdaED, upperBound, n, tCS, alpha, timeSlice, rrBeginning)
