@@ -80,6 +80,10 @@ def main(processes, rrBeginning, timeSlice, tCS):
                     queue.append(i)
                 else:
                     queue.insert(0,i)
+
+                if(i.turnaroundStart == -1):                                                # If not turnaround start time is set then set it
+                    i.turnaroundStart = t
+
                 if(t<1000):
                     event("arrival", queue, i, t)
 

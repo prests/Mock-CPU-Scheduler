@@ -197,19 +197,23 @@ def main(processes, tCS, alpha):
                         if((i.tau < queue[j].tau) or ((i.tau == queue[j].tau) and (i.name < queue[j].name))):   # Tau is shorter and can cut  
                             i.changeState(3)                                                            # Marks it as ready
                             queue.insert(j, i)
+                            if(i.turnaroundStart == -1):                                           # If not turnaround start time is set then set it
+                                i.turnaroundStart = t
                             if(t<1000):
                                 event("ioFinish", queue, i, t)
                             break
                     if(i.state != 3):                                                                   # Arriving process has largest Tau in list
                         i.changeState(3)                                                                # Marks it as ready
                         queue.append(i)
+                        if(i.turnaroundStart == -1):                                           # If not turnaround start time is set then set it
+                            i.turnaroundStart = t
                         if(t<1000):
                             event("ioFinish", queue, i, t)
 
         for i in processes:                                                                             # Checks if process is waiting in ready queue
             if(i.state == 3):                                                                           # Process is waiting for increment wait time
                 i.waitTime += 1
-                #waitTimeTotal += 1
+            
         
         t += 1                                                                                          # Increment time
     print("time %dms: Simulator ended for SJF [Q <empty>]\n" % t)
