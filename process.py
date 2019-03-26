@@ -25,6 +25,7 @@ class Process(object):
         self.cpuBurstTimes = cpuBurstTimes    # list of all times the CPU and IO alternated
         self.completed = 0                    # num of bursts that the process has completed
         self.waitTime = 0                     # Wait time for a CPU Burst
+        self.waitTimeStart = -1               # When the process starts waiting
         self.remainingTime = 0                # Time needed to finish a CPU burst. Used for formating
         self.name = newName                   # Name of process
         self.startTime = 0                    # Start when a process starts using the CPU

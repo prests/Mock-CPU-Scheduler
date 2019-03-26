@@ -168,7 +168,7 @@ def main(processes, tCS):
                     i.turnaroundStart = t
 
         for i in processes:                                                                             # Check if process is waiting in ready queue
-            if(i.state == 3):
+            if(i.state == 3 and len(processes)!=1):
                 i.waitTime += 1                                                                         # Incrememnt total wait time of burst
         
         t += 1                                                                                          # Increment time

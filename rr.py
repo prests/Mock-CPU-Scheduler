@@ -50,6 +50,7 @@ def event(eventType, queue, process, t):
 def main(processes, rrBeginning, timeSlice, tCS):
     burstTimeTotal = 0                              # Total burst time for all processes
     waitTimeTotal = 0                               # Total wait time for all processes
+    waits = 0
     turnaroundTimeTotal = 0                         # Total turnaround time for all processes
     contextSwitchTotal = 0                          # Total number of context switches when running algorithm
     preemptionTotal = 0
@@ -75,7 +76,7 @@ def main(processes, rrBeginning, timeSlice, tCS):
                     Process Arrival
                 '''
                 i.changeState(3)                                                                        # Marks it as ready
-                
+                i.waitTimeStart = t
                 if(rrBeginning == "END"):                                                               # Determines for RR if process gets added to BEGINNING or END of queue
                     queue.append(i)
                 else:
@@ -100,6 +101,8 @@ def main(processes, rrBeginning, timeSlice, tCS):
                     '''
                     currentProcess = queue.pop(0)                                           # Take process off ready queue
                     currentProcess.changeState(2)
+                    #waits += (t-currentProcess.waitTimeStart)
+                    
                     if(t<1000):
                         event("cpuStart", queue, currentProcess, t)
                     contextSwitchIn = False                                                 # Mark done context switching
@@ -112,7 +115,10 @@ def main(processes, rrBeginning, timeSlice, tCS):
                     if(not contextSwitchIn and not contextSwitchOut and len(queue) > 0):    # Start context switch to add process in
                         contextSwitchIn = True
                         contextSwitchTime = t
+                        waits += (t-queue[0].waitTimeStart)
+
             else:
+                
                 if((t == currentProcess.startTime + currentProcess.cpuBurstTimes[currentProcess.completed] and not contextSwitchOut and not currentProcess.currentPrempt) or (t == currentProcess.startTime + currentProcess.remainingTime and not contextSwitchOut and currentProcess.currentPrempt)): # If CPU burst is finished
                     '''
                         CPU Burst Completed
@@ -122,6 +128,7 @@ def main(processes, rrBeginning, timeSlice, tCS):
                     currentProcess.currentPrempt = False                                                # Burst is no longer preempting
                     currentProcess.remainingTime = 0                                                    # Reset burst remaining time
 
+                    
                     if(currentProcess.burstComplete == currentProcess.cpuBurstNum):                         # Last cpu burst of process finished
                         '''
                             Process Completed
@@ -130,7 +137,7 @@ def main(processes, rrBeginning, timeSlice, tCS):
                         
                         waitTimeTotal += currentProcess.waitTime                                        # Add wait time to total
                         currentProcess.waitTime = 0                                                     # Reset process wait time
-                        
+
                         turnaroundTimeTotal += (t-currentProcess.turnaroundStart) + tCS/2                 # Add turnaround time to total
                         currentProcess.turnaroundStart = -1                                             # Reset process turnaround start time
                         
@@ -153,7 +160,8 @@ def main(processes, rrBeginning, timeSlice, tCS):
                         waitTimeTotal += currentProcess.waitTime                                        # Add wait time to total
                         currentProcess.waitTime = 0                                                     # Reset process wait time
                         
-                        turnaroundTimeTotal += (t-currentProcess.turnaroundStart) + tCS/2                 # Add turnaround time to total
+                        
+                        turnaroundTimeTotal += (t-currentProcess.turnaroundStart) + tCS/2               # Add turnaround time to total
                         currentProcess.turnaroundStart = -1                                             # Reset process turnaround start time
                         
                         if(t<1000):
@@ -188,6 +196,12 @@ def main(processes, rrBeginning, timeSlice, tCS):
                         contextSwitchTime = t
 
                         preemptionTotal += 1                                                            # Increase total preemptions for algorithm
+                        
+                    # idk if this is supposed to be here
+                    waitTimeTotal += currentProcess.waitTime                                        # Add wait time to total
+                    currentProcess.waitTime = 0                                                     # Reset process wait time
+              
+                        
 
                 
         for i in processes:                                                                             # Checks if a process is done blocking on I/O
@@ -197,6 +211,7 @@ def main(processes, rrBeginning, timeSlice, tCS):
                 '''
                 i.completed += 1
                 i.state = 3
+                
                 if(len(queue) == 0 and currentProcess is None and not contextSwitchOut and not contextSwitchIn):
                     queue.append(i)
                     if(i.turnaroundStart == -1):                                           # If not turnaround start time is set then set it
@@ -206,6 +221,7 @@ def main(processes, rrBeginning, timeSlice, tCS):
                     if(t<1000):
                         event("ioFinish", queue, i, t)
                 else:
+                    i.waitTimeStart = t
                     if(rrBeginning == "END"):                                                               # Determines for RR if process gets added to BEGINNING or END of queue
                         queue.append(i)
                     else:
@@ -224,6 +240,7 @@ def main(processes, rrBeginning, timeSlice, tCS):
 
 
     averageCPUBurstTime = round(burstTimeTotal/float(totalBursts), 3)               # Average burst time for algorithm
-    averageWaitTime = round(waitTimeTotal/float(totalBursts), 3)                    # Average wait time for algorithm
+    #averageWaitTime = round(waitTimeTotal/float(totalBursts), 3)                    # Average wait time for algorithm
+    averageWaitTime = round(waits/float(totalBursts), 3)             
     averageTurnaroundTime = round(turnaroundTimeTotal/float(totalBursts), 3)        # Average turnaround time for algorithm
     return averageCPUBurstTime, averageWaitTime, averageTurnaroundTime, contextSwitchTotal, preemptionTotal
