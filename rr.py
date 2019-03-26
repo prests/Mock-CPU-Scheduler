@@ -196,11 +196,9 @@ def main(processes, rrBeginning, timeSlice, tCS):
                         contextSwitchTime = t
 
                         preemptionTotal += 1                                                            # Increase total preemptions for algorithm
-
-                    # idk if this is supposed to be here
-                    waitTimeTotal += currentProcess.waitTime                                        # Add wait time to total
-                    currentProcess.waitTime = 0                                                     # Reset process wait time
-              
+                    # this changed everything for the better
+                    currentProcess.waitTimeStart = t + tCS/2                                               # Reset process wait time start var
+                    #waits -= tCS/2 # <------------ ADDED
                         
 
                 
@@ -221,7 +219,7 @@ def main(processes, rrBeginning, timeSlice, tCS):
                     if(t<1000):
                         event("ioFinish", queue, i, t)
                 else:
-                    i.waitTimeStart = t
+                    #i.waitTimeStart = t
                     if(rrBeginning == "END"):                                                               # Determines for RR if process gets added to BEGINNING or END of queue
                         queue.append(i)
                     else:
@@ -240,7 +238,7 @@ def main(processes, rrBeginning, timeSlice, tCS):
 
 
     averageCPUBurstTime = round(burstTimeTotal/float(totalBursts), 3)               # Average burst time for algorithm
-    averageWaitTime = round(waitTimeTotal/float(totalBursts), 3)                    # Average wait time for algorithm
-    #averageWaitTime = round(waits/float(totalBursts), 3)             
+    #averageWaitTime = round(waitTimeTotal/float(totalBursts), 3)                    # Average wait time for algorithm
+    averageWaitTime = round(waits/float(totalBursts), 3)             
     averageTurnaroundTime = round(turnaroundTimeTotal/float(totalBursts), 3)        # Average turnaround time for algorithm
     return averageCPUBurstTime, averageWaitTime, averageTurnaroundTime, contextSwitchTotal, preemptionTotal

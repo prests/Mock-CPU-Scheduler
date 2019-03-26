@@ -81,11 +81,6 @@ def main(processes, tCS):
 
 
         if(len(queue) > 0 or currentProcess is not None):                                   # If there is a process running or there are ready processes
-            '''
-            for p in processes:
-                if p.state == 3:
-                    waits+=1
-            '''
             
             if(currentProcess is None):                                                     # Start a process if nothing running
                 
@@ -102,6 +97,7 @@ def main(processes, tCS):
                     contextSwitchTotal += 1                                                 # Increase context switch total for algorithm
                     
                     waits += (t - currentProcess.waitTimeStart) - tCS/2
+
 
                     if(currentProcess.turnaroundStart == -1):                               # If process turnaround start time isn't set then set it
                         currentProcess.turnaroundStart = t
@@ -186,9 +182,10 @@ def main(processes, tCS):
         for i in processes:                                                                             # Check if process is waiting in ready queue
             if(i.state == 3 and len(processes)!=1):
                 i.waitTime += 1                                                                         # Incrememnt total wait time of burst
-
+                
         t += 1                                                                                          # Increment time
     print("time %dms: Simulator ended for FCFS [Q <empty>]\n" % t)
+
 
     averageCPUBurstTime = round(burstTimeTotal/float(totalBursts), 3)               # Average burst time for algorithm
     #averageWaitTime = round(waitTimeTotal/float(totalBursts), 3)                    # Average wait time for algorithm
