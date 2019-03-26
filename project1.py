@@ -76,7 +76,7 @@ def main(seed, lambdaED, upperBound, n, tCS, alpha, timeSlice, rrBeginning):
         ioburst = False
         for j in range(0, (cpuBurstNumber-1)*2+1):
             if(ioburst):
-                cpuBurstTimes.append(math.ceil(expRandom.expDist(lambdaED, upperBound, r)) + (tCS/2))
+                cpuBurstTimes.append(math.ceil(expRandom.expDist(lambdaED, upperBound, r)) + int(tCS/2))
                 ioburst = False
             else:
                 cpuBurstTimes.append(math.ceil(expRandom.expDist(lambdaED, upperBound, r)))
@@ -85,6 +85,7 @@ def main(seed, lambdaED, upperBound, n, tCS, alpha, timeSlice, rrBeginning):
         tau = math.ceil(1/float(lambdaED))
         p = process.Process(arrivalTime, 0, cpuBurstNumber, cpuBurstTimes, alphabet[i], tau)
         processes.append(p)
+        print(cpuBurstTimes)
     
     '''
         All the sorting algorithms
