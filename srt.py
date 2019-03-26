@@ -183,54 +183,10 @@ def main(processes, tCS, alpha):
                         currentProcess.currentPrempt = False                                                                                        # Burst is no longer preempting
                         currentProcess.remainingTime = 0                                                                                            # Reset remaining time
                         
-<<<<<<< HEAD
-                        waitTimeTotal += currentProcess.waitTime                                                                                # Add wait time to average
-                        currentProcess.waitTime = 0                                                                                             # Reset process wait time
-                        
-                        turnaroundTimeTotal += (t-currentProcess.turnaroundStart) + tCS/2                                                         # Add turnaround time to average
-                        currentProcess.turnaroundStart = -1                                                                                     # Reset burst turnaround time start
-                        
-                        event("terminated", queue, currentProcess, t, "")                                                                       
-                        
-                        completed += 1                                                                                                          # Add to completed processes total
-                        currentProcess.state = 5
-                        currentProcess = None
-                        if(completed == len(processes)):                                                                                        # All processes are done
-=======
                         if(currentProcess.burstComplete == currentProcess.cpuBurstNum):                                                                 # Last CPU burst of process finished
->>>>>>> 0a5bd2efd9242b46a62e6ba76aadd4211ac35beb
                             '''
                                 Process Completed
                             '''
-<<<<<<< HEAD
-                            t += tCS/2
-                            break
-                    else:                                                                                                                       # Finished a burst so start blocking on I/O
-                        '''
-                            I/O Blocking Starting
-                        '''
-                        burstTimeTotal += currentProcess.cpuBurstTimes[currentProcess.completed-1]                                                # Add burst time to average
-                        
-                        waitTimeTotal += currentProcess.waitTime                                                                                # Add wait time to average
-                        currentProcess.waitTime = 0                                                                                             # Reset process wait time
-                        
-                        turnaroundTimeTotal += (t-currentProcess.turnaroundStart) + tCS/2                                                         # Add turnaround time to average
-                        currentProcess.turnaroundStart = -1                                                                                     # Reset burst turnaround time start
-                        
-                        if(t<1000):
-                            event("cpuFinish", queue, currentProcess, t, "")
-                        
-                        currentProcess.tau = expAverage.nextTau(currentProcess.tau, alpha, currentProcess.cpuBurstTimes[currentProcess.completed-1])    # Recalculate tau
-                        
-                        if(t<1000):
-                            event("newTau", queue, currentProcess, t, "")
-                            event("ioStart", queue, currentProcess, t, "")
-                        currentProcess.state = 4                                                                                                        # Set process to I/O blocking
-                        currentProcess.startTime = t                                                                                                    # Set start time for I/O blocking
-                    
-                    contextSwitchOut = True                                                                                                             # Start context switch out
-                    contextSwitchTime = t
-=======
                             burstTimeTotal += currentProcess.cpuBurstTimes[currentProcess.completed-1]                                                # Add burst time to average                                               
                             
                             waitTimeTotal += currentProcess.waitTime                                                                                # Add wait time to average
@@ -274,7 +230,6 @@ def main(processes, tCS, alpha):
                             
                         contextSwitchOut = True                                                                                                             # Start context switch out
                         contextSwitchTime = t
->>>>>>> 0a5bd2efd9242b46a62e6ba76aadd4211ac35beb
 
                 
         for i in processes:                                                                                                                             # Checking if a process has finished I/O burst
