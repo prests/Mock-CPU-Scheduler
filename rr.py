@@ -101,7 +101,8 @@ def main(processes, rrBeginning, timeSlice, tCS):
                     '''
                     currentProcess = queue.pop(0)                                           # Take process off ready queue
                     currentProcess.changeState(2)
-                    #waits += (t-currentProcess.waitTimeStart)
+
+                    waits += (t - currentProcess.waitTimeStart) - tCS/2
                     
                     if(t<1000):
                         event("cpuStart", queue, currentProcess, t)
@@ -115,7 +116,6 @@ def main(processes, rrBeginning, timeSlice, tCS):
                     if(not contextSwitchIn and not contextSwitchOut and len(queue) > 0):    # Start context switch to add process in
                         contextSwitchIn = True
                         contextSwitchTime = t
-                        waits += (t-queue[0].waitTimeStart)
 
             else:
                 
@@ -196,11 +196,9 @@ def main(processes, rrBeginning, timeSlice, tCS):
                         contextSwitchTime = t
 
                         preemptionTotal += 1                                                            # Increase total preemptions for algorithm
-                        
-                    # idk if this is supposed to be here
-                    waitTimeTotal += currentProcess.waitTime                                        # Add wait time to total
-                    currentProcess.waitTime = 0                                                     # Reset process wait time
-              
+                    # this changed everything for the better
+                    currentProcess.waitTimeStart = t + tCS/2                                               # Reset process wait time start var
+                    #waits -= tCS/2 # <------------ ADDED
                         
 
                 
@@ -211,7 +209,7 @@ def main(processes, rrBeginning, timeSlice, tCS):
                 '''
                 i.completed += 1
                 i.state = 3
-                
+                i.waitTimeStart = t
                 if(len(queue) == 0 and currentProcess is None and not contextSwitchOut and not contextSwitchIn):
                     queue.append(i)
                     if(i.turnaroundStart == -1):                                           # If not turnaround start time is set then set it
@@ -221,7 +219,7 @@ def main(processes, rrBeginning, timeSlice, tCS):
                     if(t<1000):
                         event("ioFinish", queue, i, t)
                 else:
-                    i.waitTimeStart = t
+                    #i.waitTimeStart = t
                     if(rrBeginning == "END"):                                                               # Determines for RR if process gets added to BEGINNING or END of queue
                         queue.append(i)
                     else:
