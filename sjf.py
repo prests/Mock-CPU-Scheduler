@@ -178,22 +178,22 @@ def main(processes, tCS, alpha):
                     queue.append(i)
                     contextSwitchIn = True
                     contextSwitchTime = t
-                    if(t<1000):
-                        event("ioFinish", queue, i, t)
+                    #if(t<1000):
+                    event("ioFinish", queue, i, t)
                 else:
                     for j in range(0,len(queue)):                                                       # Check if arriving process can cut ready queue
                         
                         if((i.tau < queue[j].tau) or ((i.tau == queue[j].tau) and (i.name < queue[j].name))):   # Tau is shorter and can cut  
                             i.changeState(3)                                                            # Marks it as ready
                             queue.insert(j, i)
-                            if(t<1000):
-                                event("ioFinish", queue, i, t)
+                            #if(t<1000):
+                            event("ioFinish", queue, i, t)
                             break
                     if(i.state != 3):                                                                   # Arriving process has largest Tau in list
                         i.changeState(3)                                                                # Marks it as ready
                         queue.append(i)
-                        if(t<1000):
-                            event("ioFinish", queue, i, t)
+                        #if(t<1000):
+                        event("ioFinish", queue, i, t)
 
         for i in processes:                                                                             # Checks if process is waiting in ready queue
             if(i.state == 3):                                                                           # Process is waiting for increment wait time
