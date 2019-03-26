@@ -68,6 +68,7 @@ def main(processes, tCS):
                 '''
                 i.changeState(3)                                                                        # Marks it as ready
                 queue.append(i)
+                i.turnaroundStart = t
                 if(t<1000):
                     event("arrival", queue, i, t)
 
@@ -155,12 +156,16 @@ def main(processes, tCS):
                 i.state = 3
                 if(len(queue) == 0 and currentProcess is None and not contextSwitchOut and not contextSwitchIn):
                     queue.append(i)
+                    if(i.turnaroundStart == -1):                                                # If not turnaround start time is set then set it
+                        i.turnaroundStart = t
                     contextSwitchIn = True
                     contextSwitchTime = t
                     if(t<1000):
                         event("ioFinish", queue, i, t)
                 else:
                     queue.append(i)
+                    if(i.turnaroundStart == -1):                                                # If not turnaround start time is set then set it
+                        i.turnaroundStart = t
                     if(t<1000):
                         event("ioFinish", queue, i, t)
 

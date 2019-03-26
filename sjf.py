@@ -72,6 +72,9 @@ def main(processes, tCS, alpha):
                     queue.append(i)
                     #if(t<1000):
                     event("arrival", queue, i, t)
+
+                    if(i.turnaroundStart == -1):                                           # If not turnaround start time is set then set it
+                        i.turnaroundStart = t
                 else:
                     for j in range(0,len(queue)):                                                       # Check if arriving process can cut ready queue
                         if((i.tau < queue[j].tau) or ((i.tau == queue[j].tau) and (i.name < queue[j].name))):   # Tau is shorter and can cut  
@@ -79,12 +82,16 @@ def main(processes, tCS, alpha):
                             queue.insert(j, i)
                             #if(t<1000):
                             event("arrival", queue, i, t)
+                            if(i.turnaroundStart == -1):                                           # If not turnaround start time is set then set it
+                                i.turnaroundStart = t
                             break
                     if(i.state != 3):                                                                   # Arriving process has largest Tau in list
                         i.changeState(3)                                                                # Marks it as ready
                         queue.append(i)
                         #if(t<1000):
                         event("arrival", queue, i, t)
+                        if(i.turnaroundStart == -1):                                           # If not turnaround start time is set then set it
+                            i.turnaroundStart = t
 
         if(contextSwitchOut and (t == contextSwitchTime + int(tCS/2))):                                 # Context switching to get a process out of CPU
             contextSwitchOut = False
@@ -167,6 +174,9 @@ def main(processes, tCS, alpha):
                     contextSwitchTime = t
 
                 
+
+
+
         for i in processes:                                                                             # Check if a process is finished blocking on I/O
             if(i.state == 4 and (t == i.startTime + i.cpuBurstTimes[i.completed])):                     # Process finished I/O blocking
                 '''
@@ -188,16 +198,22 @@ def main(processes, tCS, alpha):
                             queue.insert(j, i)
                             #if(t<1000):
                             event("ioFinish", queue, i, t)
+                            if(i.turnaroundStart == -1):                                           # If not turnaround start time is set then set it
+                                i.turnaroundStart = t
                             break
                     if(i.state != 3):                                                                   # Arriving process has largest Tau in list
                         i.changeState(3)                                                                # Marks it as ready
                         queue.append(i)
                         #if(t<1000):
                         event("ioFinish", queue, i, t)
+                        if(i.turnaroundStart == -1):                                           # If not turnaround start time is set then set it
+                            i.turnaroundStart = t
 
         for i in processes:                                                                             # Checks if process is waiting in ready queue
             if(i.state == 3):                                                                           # Process is waiting for increment wait time
                 i.waitTime += 1
+            
+        
         t += 1                                                                                          # Increment time
     print("time %dms: Simulator ended for SJF [Q <empty>]\n" % t)
 
