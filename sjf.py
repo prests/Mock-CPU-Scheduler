@@ -1,4 +1,4 @@
-# /usr/bin/python3
+#!/usr/bin/python3
 import expAverage
 
 '''
@@ -27,7 +27,10 @@ def event(eventType, queue, process, t):
     elif(eventType == "cpuStart"):
         print("time %dms: Process %s started using the CPU for %dms burst %s" %(t, process.name, process.cpuBurstTimes[process.completed], queueStr))
     elif(eventType == "cpuFinish"):
-        print("time %dms: Process %s completed a CPU burst; %d bursts to go %s" %(t, process.name, process.cpuBurstNum-process.burstComplete, queueStr))
+        if(process.cpuBurstNum-process.burstComplete == 1):
+            print("time %dms: Process %s completed a CPU burst; %d burst to go %s" %(t, process.name, process.cpuBurstNum-process.burstComplete, queueStr))
+        else:
+            print("time %dms: Process %s completed a CPU burst; %d bursts to go %s" %(t, process.name, process.cpuBurstNum-process.burstComplete, queueStr))
     elif(eventType == "ioStart"):
         print("time %dms: Process %s switching out of CPU; will block on I/O until time %dms %s" %(t, process.name, t+process.cpuBurstTimes[process.completed], queueStr))
     elif(eventType == "ioFinish"):
@@ -70,8 +73,8 @@ def main(processes, tCS, alpha):
                 if(len(queue) == 0):                                                                    # Queue is empty so add to ready queue
                     i.changeState(3)                                                                    # Marks it as ready
                     queue.append(i)
-                    #if(t<1000):
-                    event("arrival", queue, i, t)
+                    if(t<1000):
+                        event("arrival", queue, i, t)
 
                     if(i.turnaroundStart == -1):                                           # If not turnaround start time is set then set it
                         i.turnaroundStart = t
@@ -80,16 +83,16 @@ def main(processes, tCS, alpha):
                         if((i.tau < queue[j].tau) or ((i.tau == queue[j].tau) and (i.name < queue[j].name))):   # Tau is shorter and can cut  
                             i.changeState(3)                                                            # Marks it as ready
                             queue.insert(j, i)
-                            #if(t<1000):
-                            event("arrival", queue, i, t)
+                            if(t<1000):
+                                event("arrival", queue, i, t)
                             if(i.turnaroundStart == -1):                                           # If not turnaround start time is set then set it
                                 i.turnaroundStart = t
                             break
                     if(i.state != 3):                                                                   # Arriving process has largest Tau in list
                         i.changeState(3)                                                                # Marks it as ready
                         queue.append(i)
-                        #if(t<1000):
-                        event("arrival", queue, i, t)
+                        if(t<1000):
+                            event("arrival", queue, i, t)
                         if(i.turnaroundStart == -1):                                           # If not turnaround start time is set then set it
                             i.turnaroundStart = t
 
@@ -99,15 +102,14 @@ def main(processes, tCS, alpha):
 
         if(len(queue) > 0 or currentProcess is not None):                                               # If there is a process running or there are ready processes
             
-            if(currentProcess is None):                                                                 # Start a process if nothing running
-                if(contextSwitchIn and (t == contextSwitchTime + int(tCS/2))):                          # Account for context switching
+            if(currentProcess is None or currentProcess.state == 6):                                                                 # Start a process if nothing running
+                if(contextSwitchIn and (t == contextSwitchTime + int(tCS/2) and currentProcess is not None)):                          # Account for context switching
                     '''
                         CPU Burst Starting
                     '''
-                    currentProcess = queue.pop(0)                                                       # Take process off ready queue
                     currentProcess.changeState(2)
-                    #if(t<1000):
-                    event("cpuStart", queue, currentProcess, t)
+                    if(t<1000):
+                        event("cpuStart", queue, currentProcess, t)
                     contextSwitchIn = False                                                             # Mark done context switching
                     currentProcess.startTime = t                                                        # Set start time of process
                     contextSwitchTotal += 1
@@ -116,6 +118,9 @@ def main(processes, tCS, alpha):
                 else:
                     if(not contextSwitchIn and not contextSwitchOut and len(queue) > 0):                # Start context switch to add process in
                         contextSwitchIn = True
+                        if(currentProcess is None):
+                            currentProcess = queue.pop(0)
+                            currentProcess.changeState(6)
                         contextSwitchTime = t
             else:
                 if(t == currentProcess.startTime + currentProcess.cpuBurstTimes[currentProcess.completed] and not contextSwitchOut): #If CPU burst or I/O block is finished
@@ -160,20 +165,18 @@ def main(processes, tCS, alpha):
                         turnaroundTimeTotal += (t-currentProcess.turnaroundStart) + tCS                 # Add turnaround time to total
                         currentProcess.turnaroundStart = -1                                             # Reset burst turnaround time
                         
-                        #if(t<1000):
-                        event("cpuFinish", queue, currentProcess, t)
+                        if(t<1000):
+                            event("cpuFinish", queue, currentProcess, t)
                         currentProcess.tau = expAverage.nextTau(currentProcess.tau, alpha, currentProcess.cpuBurstTimes[currentProcess.completed-1])        # Recalculate tau
-                        #if(t<1000):
-                        event("newTau", queue, currentProcess, t)
-                        event("ioStart", queue, currentProcess, t)
+                        if(t<1000):
+                            event("newTau", queue, currentProcess, t)
+                            event("ioStart", queue, currentProcess, t)
                         
                         currentProcess.state = 4
                         currentProcess.startTime = t                                                    # Set start time for I/O burst
                     
                     contextSwitchOut = True                                                             # Start context switch out
                     contextSwitchTime = t
-
-                
 
 
 
@@ -184,28 +187,30 @@ def main(processes, tCS, alpha):
                 '''
                 i.completed += 1
                 if(len(queue) == 0 and currentProcess is None and not contextSwitchOut and not contextSwitchIn):    # Queue is empty add process to rady queue
-                    i.changeState(3)                                                                    # Marks it as ready
+                    i.changeState(6)                                                                    # Marks it as ready
                     queue.append(i)
                     contextSwitchIn = True
                     contextSwitchTime = t
-                    #if(t<1000):
-                    event("ioFinish", queue, i, t)
+                    if(t<1000):
+                        event("ioFinish", queue, i, t)
+                    currentProcess = i
+                    queue.pop(0)
                 else:
                     for j in range(0,len(queue)):                                                       # Check if arriving process can cut ready queue
                         
                         if((i.tau < queue[j].tau) or ((i.tau == queue[j].tau) and (i.name < queue[j].name))):   # Tau is shorter and can cut  
                             i.changeState(3)                                                            # Marks it as ready
                             queue.insert(j, i)
-                            #if(t<1000):
-                            event("ioFinish", queue, i, t)
+                            if(t<1000):
+                                event("ioFinish", queue, i, t)
                             if(i.turnaroundStart == -1):                                           # If not turnaround start time is set then set it
                                 i.turnaroundStart = t
                             break
                     if(i.state != 3):                                                                   # Arriving process has largest Tau in list
                         i.changeState(3)                                                                # Marks it as ready
                         queue.append(i)
-                        #if(t<1000):
-                        event("ioFinish", queue, i, t)
+                        if(t<1000):
+                            event("ioFinish", queue, i, t)
                         if(i.turnaroundStart == -1):                                           # If not turnaround start time is set then set it
                             i.turnaroundStart = t
 
