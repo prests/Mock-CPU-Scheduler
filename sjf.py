@@ -189,6 +189,8 @@ def main(processes, tCS, alpha):
                 if(len(queue) == 0 and currentProcess is None and not contextSwitchOut and not contextSwitchIn):    # Queue is empty add process to rady queue
                     i.changeState(6)                                                                    # Marks it as ready
                     queue.append(i)
+                    if(i.turnaroundStart == -1):                                           # If not turnaround start time is set then set it
+                        i.turnaroundStart = t
                     contextSwitchIn = True
                     contextSwitchTime = t
                     if(t<1000):

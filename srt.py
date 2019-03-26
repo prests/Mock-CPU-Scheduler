@@ -115,6 +115,7 @@ def main(processes, tCS, alpha):
                     if(i.state != 3):                                                                                                           # Arriving process has largest Tau in list
                         i.changeState(3)                                                                                                        # Marks it as ready
                         queue.append(i)
+                        i.turnaroundStart = t
                         if(t<1000):
                             event("arrival", queue, i, t, "")
 
@@ -263,6 +264,8 @@ def main(processes, tCS, alpha):
                 elif(len(queue) == 0 and currentProcess is None and not contextSwitchOut and not contextSwitchIn):    # Queue is empty add process to ready queue
                     i.changeState(6)                                                                    # Marks it as ready
                     queue.append(i)
+                    if(i.turnaroundStart == -1):                                           # If not turnaround start time is set then set it
+                        i.turnaroundStart = t
                     contextSwitchIn = True
                     contextSwitchTime = t
                     currentProcess = i
@@ -280,6 +283,8 @@ def main(processes, tCS, alpha):
                     if(i.state != 3):                                               # Arriving process has largest Tau in list
                         i.changeState(3)                                            # Marks it as ready
                         queue.append(i)
+                        if(i.turnaroundStart == -1):                                           # If not turnaround start time is set then set it
+                            i.turnaroundStart = t
                         if(t<1000):
                             event("ioFinish", queue, i, t, "")
 
