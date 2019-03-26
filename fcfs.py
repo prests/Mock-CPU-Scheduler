@@ -45,7 +45,7 @@ def main(processes, tCS):
     waitTimeTotal = 0                               # Total wait time for all processes
     turnaroundTimeTotal = 0                         # Total turnaround time for all processes
     contextSwitchTotal = 0                          # Total number of context switches when running algorithm
-    
+    waits = 0
     totalBursts = 0                                 # Total number of bursts of all processes
     for i in processes:
         totalBursts += i.cpuBurstNum
@@ -69,6 +69,7 @@ def main(processes, tCS):
                 i.changeState(3)                                                                        # Marks it as ready
                 queue.append(i)
                 i.turnaroundStart = t
+                i.waitTimeStart = t
                 if(t<1000):
                     event("arrival", queue, i, t)
 
@@ -76,7 +77,16 @@ def main(processes, tCS):
             contextSwitchOut = False
             currentProcess = None
 
+            
+
+
         if(len(queue) > 0 or currentProcess is not None):                                   # If there is a process running or there are ready processes
+            '''
+            for p in processes:
+                if p.state == 3:
+                    waits+=1
+            '''
+            
             if(currentProcess is None):                                                     # Start a process if nothing running
                 
                 if(contextSwitchIn and (t == contextSwitchTime + int(tCS/2))):              # Account for context switching
@@ -91,6 +101,8 @@ def main(processes, tCS):
                     currentProcess.startTime = t                                            # Set start time of process
                     contextSwitchTotal += 1                                                 # Increase context switch total for algorithm
                     
+                    waits += (t - currentProcess.waitTimeStart) - tCS/2
+
                     if(currentProcess.turnaroundStart == -1):                               # If process turnaround start time isn't set then set it
                         currentProcess.turnaroundStart = t
                 else:
@@ -98,6 +110,8 @@ def main(processes, tCS):
                         contextSwitchIn = True
                         contextSwitchTime = t
             else:
+                
+                
                 if(t == currentProcess.startTime + currentProcess.cpuBurstTimes[currentProcess.completed] and not contextSwitchOut): # If CPU burst is finished
                     '''
                         CPU Burst Completed
@@ -112,6 +126,8 @@ def main(processes, tCS):
                         
                         waitTimeTotal += currentProcess.waitTime                                        # Add wait time to total
                         currentProcess.waitTime = 0                                                     # Reset process wait time
+
+                        
                         
                         turnaroundTimeTotal += (t-currentProcess.turnaroundStart) + tCS/2                 # Add turnaround time to total
                         currentProcess.turnaroundStart = -1                                             # Reset process turnaround start time
@@ -145,7 +161,6 @@ def main(processes, tCS):
                         currentProcess.startTime = t
                     contextSwitchOut = True                                                             # Start context switch out
                     contextSwitchTime = t
-
                 
         for i in processes:                                                                             # Checks if a process is done blocking on I/O
             if(i.state == 4 and (t == i.startTime + i.cpuBurstTimes[i.completed])):                     # Process is  finished I/O blocking
@@ -154,6 +169,7 @@ def main(processes, tCS):
                 '''
                 i.completed += 1
                 i.state = 3
+                i.waitTimeStart = t
                 if(len(queue) == 0 and currentProcess is None and not contextSwitchOut and not contextSwitchIn):
                     queue.append(i)
                     contextSwitchIn = True
@@ -164,17 +180,17 @@ def main(processes, tCS):
                     queue.append(i)
                     if(t<1000):
                         event("ioFinish", queue, i, t)
-                if(i.turnaroundStart == -1):                                                # If not turnaround start time is set then set it
-                    i.turnaroundStart = t
+                
 
         for i in processes:                                                                             # Check if process is waiting in ready queue
             if(i.state == 3 and len(processes)!=1):
                 i.waitTime += 1                                                                         # Incrememnt total wait time of burst
-        
+
         t += 1                                                                                          # Increment time
     print("time %dms: Simulator ended for FCFS [Q <empty>]\n" % t)
 
     averageCPUBurstTime = round(burstTimeTotal/float(totalBursts), 3)               # Average burst time for algorithm
-    averageWaitTime = round(waitTimeTotal/float(totalBursts), 3)                    # Average wait time for algorithm
+    #averageWaitTime = round(waitTimeTotal/float(totalBursts), 3)                    # Average wait time for algorithm
+    averageWaitTime = round(waits/float(totalBursts), 3)
     averageTurnaroundTime = round(turnaroundTimeTotal/float(totalBursts), 3)        # Average turnaround time for algorithm
     return averageCPUBurstTime, averageWaitTime, averageTurnaroundTime, contextSwitchTotal
