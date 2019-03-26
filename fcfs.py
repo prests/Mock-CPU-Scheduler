@@ -170,6 +170,7 @@ def main(processes, tCS):
                 i.completed += 1
                 i.state = 3
                 i.waitTimeStart = t
+                i.turnaroundStart = t
                 if(len(queue) == 0 and currentProcess is None and not contextSwitchOut and not contextSwitchIn):
                     queue.append(i)
                     contextSwitchIn = True
