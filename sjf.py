@@ -98,7 +98,44 @@ def main(processes, tCS, alpha):
 
         if(contextSwitchOut and (t == contextSwitchTime + int(tCS/2))):                                 # Context switching to get a process out of CPU
             contextSwitchOut = False
-            currentProcess = None
+            contextSwitchTime = -1 
+
+            for i in processes:                                                                             # Check if a process is finished blocking on I/O
+                if(i.state == 4 and (t == i.startTime + i.cpuBurstTimes[i.completed])):                     # Process finished I/O blocking
+                    '''
+                        I/O Blocking Completed
+                    '''
+                    i.completed += 1
+                    if(len(queue) == 0 and currentProcess is None and not contextSwitchOut and not contextSwitchIn):    # Queue is empty add process to rady queue
+                        i.changeState(6)                                                                    # Marks it as ready
+                        queue.append(i)
+                        contextSwitchIn = True
+                        contextSwitchTime = t
+                        if(t<1000):
+                            event("ioFinish", queue, i, t)
+                        currentProcess = i
+                        queue.pop(0)
+                    else:
+                        for j in range(0,len(queue)):                                                       # Check if arriving process can cut ready queue
+                            
+                            if((i.tau < queue[j].tau) or ((i.tau == queue[j].tau) and (i.name < queue[j].name))):   # Tau is shorter and can cut  
+                                i.changeState(3)                                                            # Marks it as ready
+                                queue.insert(j, i)
+                                if(t<1000):
+                                    event("ioFinish", queue, i, t)
+                                if(i.turnaroundStart == -1):                                           # If not turnaround start time is set then set it
+                                    i.turnaroundStart = t
+                                break
+                        if(i.state != 3):                                                                   # Arriving process has largest Tau in list
+                            i.changeState(3)                                                                # Marks it as ready
+                            queue.append(i)
+                            if(t<1000):
+                                event("ioFinish", queue, i, t)
+                            if(i.turnaroundStart == -1):                                           # If not turnaround start time is set then set it
+                                i.turnaroundStart = t
+
+            if(currentProcess.state == 4 or currentProcess.state == 5):
+                currentProcess = None
 
         if(len(queue) > 0 or currentProcess is not None):                                               # If there is a process running or there are ready processes
             
@@ -123,60 +160,60 @@ def main(processes, tCS, alpha):
                             currentProcess.changeState(6)
                         contextSwitchTime = t
             else:
-                if(t == currentProcess.startTime + currentProcess.cpuBurstTimes[currentProcess.completed] and not contextSwitchOut): #If CPU burst or I/O block is finished
-                    '''
-                        CPU Burst Completed
-                    '''
-                    currentProcess.completed += 1
-                    currentProcess.burstComplete += 1
-                    if(currentProcess.burstComplete == currentProcess.cpuBurstNum):                         # Last cpu burst of process finished
+                if(currentProcess.state != 5):
+                    if(t == currentProcess.startTime + currentProcess.cpuBurstTimes[currentProcess.completed] and not contextSwitchOut): #If CPU burst or I/O block is finished
                         '''
-                            Process Completed
+                            CPU Burst Completed
                         '''
-                        burstTimeTotal += currentProcess.cpuBurstTimes[currentProcess.completed-1]        # Add burst time to total
-                        
-                        waitTimeTotal += currentProcess.waitTime                                        # Add wait time to total
-                        currentProcess.waitTime = 0                                                     # Reset burst wait time
-                        
-                        turnaroundTimeTotal += (t-currentProcess.turnaroundStart) + tCS/2                 # Add turnaround time to total
-                        currentProcess.turnaroundStart = -1                                             # Reset burst turnaround time
-                        
-                        event("terminated", queue, currentProcess, t)
-                        
-                        completed += 1                                                                  # Increase completed process
-                        currentProcess.state = 5
-                        currentProcess = None
-                        
-                        if(completed == len(processes)):                                                # All processes are done
+                        currentProcess.completed += 1
+                        currentProcess.burstComplete += 1
+                        if(currentProcess.burstComplete == currentProcess.cpuBurstNum):                         # Last cpu burst of process finished
                             '''
-                                All Processes Completed
+                                Process Completed
                             '''
-                            t += tCS/2
-                            break
-                    else:                                                                               # Burst is done so start blocking on I/O
-                        '''
-                            I/O Blocking Starting
-                        '''
-                        burstTimeTotal += currentProcess.cpuBurstTimes[currentProcess.completed-1]        # Add burst time to total
+                            burstTimeTotal += currentProcess.cpuBurstTimes[currentProcess.completed-1]        # Add burst time to total
+                            
+                            waitTimeTotal += currentProcess.waitTime                                        # Add wait time to total
+                            currentProcess.waitTime = 0                                                     # Reset burst wait time
+                            
+                            turnaroundTimeTotal += (t-currentProcess.turnaroundStart) + tCS/2                 # Add turnaround time to total
+                            currentProcess.turnaroundStart = -1                                             # Reset burst turnaround time
+                            
+                            event("terminated", queue, currentProcess, t)
+                            
+                            completed += 1                                                                  # Increase completed process
+                            currentProcess.state = 5
+                            
+                            if(completed == len(processes)):                                                # All processes are done
+                                '''
+                                    All Processes Completed
+                                '''
+                                t += tCS/2
+                                break
+                        else:                                                                               # Burst is done so start blocking on I/O
+                            '''
+                                I/O Blocking Starting
+                            '''
+                            burstTimeTotal += currentProcess.cpuBurstTimes[currentProcess.completed-1]        # Add burst time to total
+                            
+                            waitTimeTotal += currentProcess.waitTime                                        # Add wait time to total
+                            currentProcess.waitTime = 0                                                     # Reset burst wait time
+                            
+                            turnaroundTimeTotal += (t-currentProcess.turnaroundStart) + tCS/2                 # Add turnaround time to total
+                            currentProcess.turnaroundStart = -1                                             # Reset burst turnaround time
+                            
+                            if(t<1000):
+                                event("cpuFinish", queue, currentProcess, t)
+                            currentProcess.tau = expAverage.nextTau(currentProcess.tau, alpha, currentProcess.cpuBurstTimes[currentProcess.completed-1])        # Recalculate tau
+                            if(t<1000):
+                                event("newTau", queue, currentProcess, t)
+                                event("ioStart", queue, currentProcess, t)
+                            
+                            currentProcess.state = 4
+                            currentProcess.startTime = t                                                    # Set start time for I/O burst
                         
-                        waitTimeTotal += currentProcess.waitTime                                        # Add wait time to total
-                        currentProcess.waitTime = 0                                                     # Reset burst wait time
-                        
-                        turnaroundTimeTotal += (t-currentProcess.turnaroundStart) + tCS/2                 # Add turnaround time to total
-                        currentProcess.turnaroundStart = -1                                             # Reset burst turnaround time
-                        
-                        if(t<1000):
-                            event("cpuFinish", queue, currentProcess, t)
-                        currentProcess.tau = expAverage.nextTau(currentProcess.tau, alpha, currentProcess.cpuBurstTimes[currentProcess.completed-1])        # Recalculate tau
-                        if(t<1000):
-                            event("newTau", queue, currentProcess, t)
-                            event("ioStart", queue, currentProcess, t)
-                        
-                        currentProcess.state = 4
-                        currentProcess.startTime = t                                                    # Set start time for I/O burst
-                    
-                    contextSwitchOut = True                                                             # Start context switch out
-                    contextSwitchTime = t
+                        contextSwitchOut = True                                                             # Start context switch out
+                        contextSwitchTime = t
 
 
 
@@ -223,7 +260,6 @@ def main(processes, tCS, alpha):
         
         t += 1                                                                                          # Increment time
     print("time %dms: Simulator ended for SJF [Q <empty>]\n" % t)
-
 
     averageCPUBurstTime = round(burstTimeTotal/float(totalBursts), 3)               # Average burst time for algorithm
     averageWaitTime = round(waitTimeTotal/float(totalBursts), 3)                    # Average wait time for algorithm
