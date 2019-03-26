@@ -85,7 +85,6 @@ def main(seed, lambdaED, upperBound, n, tCS, alpha, timeSlice, rrBeginning):
         tau = math.ceil(1/float(lambdaED))
         p = process.Process(arrivalTime, 0, cpuBurstNumber, cpuBurstTimes, alphabet[i], tau)
         processes.append(p)
-        print(cpuBurstTimes)
     
     '''
         All the sorting algorithms

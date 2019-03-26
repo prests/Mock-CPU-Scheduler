@@ -77,7 +77,7 @@ def main(processes, rrBeginning, timeSlice, tCS):
                 '''
                 i.changeState(3)                                                                        # Marks it as ready
                 i.waitTimeStart = t
-                if(rrBeginning == "END"):                                                               # Determines for RR if process gets added to BEGINNING or END of queue
+                if(rrBeginning == False):                                                               # Determines for RR if process gets added to BEGINNING or END of queue
                     queue.append(i)
                 else:
                     queue.insert(0,i)
@@ -220,7 +220,7 @@ def main(processes, rrBeginning, timeSlice, tCS):
                         event("ioFinish", queue, i, t)
                 else:
                     #i.waitTimeStart = t
-                    if(rrBeginning == "END"):                                                               # Determines for RR if process gets added to BEGINNING or END of queue
+                    if(rrBeginning == False):                                                               # Determines for RR if process gets added to BEGINNING or END of queue
                         queue.append(i)
                     else:
                         queue.insert(0,i)
