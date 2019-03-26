@@ -20,46 +20,34 @@ def printQueue(queue):
 '''
     Output formating for submitty
 '''
-def event(f, eventType, queue, process, t, preempt):
+def event(eventType, queue, process, t, preempt):
     queueStr = printQueue(queue)
     if(eventType == "arrival"):
         print("time %dms: Process %s (tau %dms) arrived; added to ready queue %s" %(t, process.name, process.tau, queueStr))
-        f.write("time %dms: Process %s (tau %dms) arrived; added to ready queue %s\n" %(t, process.name, process.tau, queueStr))
     elif(eventType == "arrivalPreempt"):
         print("time %dms: Process %s (tau %dms) arrived and will preempt %s %s" %(t, process.name, process.tau, preempt.name, queueStr))
-        f.write("time %dms: Process %s (tau %dms) arrived and will preempt %s %s\n" %(t, process.name, process.tau, preempt.name, queueStr))
     elif(eventType == "cpuStart"):
         if(process.timeElapsed > 0):
             print("time %dms: Process %s started using the CPU with %dms remaining %s" %(t, process.name, process.cpuBurstTimes[process.completed] - process.timeElapsed, queueStr))
-            f.write("time %dms: Process %s started using the CPU with %dms remaining %s\n" %(t, process.name, process.cpuBurstTimes[process.completed] - process.timeElapsed, queueStr))
         else:
             print("time %dms: Process %s started using the CPU for %dms burst %s" %(t, process.name, process.cpuBurstTimes[process.completed], queueStr))
-            f.write("time %dms: Process %s started using the CPU for %dms burst %s\n" %(t, process.name, process.cpuBurstTimes[process.completed], queueStr))
     elif(eventType == "cpuFinish"):
         if(process.cpuBurstNum-process.burstComplete == 1):
             print("time %dms: Process %s completed a CPU burst; %d burst to go %s" %(t, process.name, process.cpuBurstNum-process.burstComplete, queueStr))
-            f.write("time %dms: Process %s completed a CPU burst; %d burst to go %s\n" %(t, process.name, process.cpuBurstNum-process.burstComplete, queueStr))
         else:
             print("time %dms: Process %s completed a CPU burst; %d bursts to go %s" %(t, process.name, process.cpuBurstNum-process.burstComplete, queueStr))
-            f.write("time %dms: Process %s completed a CPU burst; %d bursts to go %s\n" %(t, process.name, process.cpuBurstNum-process.burstComplete, queueStr))
     elif(eventType == "ioStart"):
         print("time %dms: Process %s switching out of CPU; will block on I/O until time %dms %s" %(t, process.name, t+process.cpuBurstTimes[process.completed], queueStr))
-        f.write("time %dms: Process %s switching out of CPU; will block on I/O until time %dms %s\n" %(t, process.name, t+process.cpuBurstTimes[process.completed], queueStr))
     elif(eventType == "ioFinish"):
         print("time %dms: Process %s (tau %dms) completed I/O; added to ready queue %s" %(t, process.name, process.tau, queueStr))
-        f.write("time %dms: Process %s (tau %dms) completed I/O; added to ready queue %s\n" %(t, process.name, process.tau, queueStr))
     elif(eventType == "ioPreempt"):
         print("time %dms: Process %s (tau %dms) completed I/O and will preempt %s %s" %(t, process.name, process.tau, preempt.name, queueStr))
-        f.write("time %dms: Process %s (tau %dms) completed I/O and will preempt %s %s\n" %(t, process.name, process.tau, preempt.name, queueStr))
     elif(eventType == "terminated"):
         print("time %dms: Process %s terminated %s" %(t, process.name, queueStr))
-        f.write("time %dms: Process %s terminated %s\n" %(t, process.name, queueStr))
     elif(eventType == "newTau"):
         print("time %dms: Recalculated tau = %dms for process %s %s" %(t, process.tau, process.name, queueStr))
-        f.write("time %dms: Recalculated tau = %dms for process %s %s\n" %(t, process.tau, process.name, queueStr))
     elif(eventType == "preemption"):
         print("time %dms: Process %s (tau %dms) will preempt %s %s" %(t, process.name, process.tau, preempt.name, queueStr))
-        f.write("time %dms: Process %s (tau %dms) will preempt %s %s\n" %(t, process.name, process.tau, preempt.name, queueStr))
     else:
         print("I'm not sure how you got here...")
 
@@ -86,9 +74,7 @@ def main(processes, tCS, alpha):
     contextSwitchIn = False                         # Is the process context switching in? 
     contextSwitchOut = False                        # Is the process context switching out?
     contextSwitchOutTime = -1
-    testFile = open("test.txt", "w")
     print("time %dms: Simulator started for SRT [Q <empty>]" % t)
-    testFile.write("time %dms: Simulator started for SRT [Q <empty>]\n" % t)
     while(True):
 
         #End context switch out
@@ -119,7 +105,7 @@ def main(processes, tCS, alpha):
                 currentProcess.completed += 1
                 currentProcess.currentPrempt = False
                 if(currentProcess.burstComplete == currentProcess.cpuBurstNum): 
-                    event(testFile, "terminated", queue, currentProcess, t, "")
+                    event("terminated", queue, currentProcess, t, "")
                     #Process is done
                     currentProcess.state = 5
                     completed += 1
@@ -129,26 +115,26 @@ def main(processes, tCS, alpha):
                         break
                 else:
                     if(t<1000):
-                        event(testFile, "cpuFinish", queue, currentProcess, t, "")
+                        event("cpuFinish", queue, currentProcess, t, "")
                     currentProcess.state = 6
                     #Start I/O
                     currentProcess.tau = expAverage.nextTau(currentProcess.tau, alpha, currentProcess.cpuBurstTimes[currentProcess.completed-1])    # Recalculate tau
                     if(t<1000):
-                        event(testFile, "newTau", queue, currentProcess, t, "")
-                        event(testFile, "ioStart", queue, currentProcess, t, "")
+                        event("newTau", queue, currentProcess, t, "")
+                        event("ioStart", queue, currentProcess, t, "")
             
         if(contextSwitchIn and (t == contextSwitchInTime + tCS/2)):
             # End context switch in CPU start
             currentProcess.state = 2
             if(t<1000):
-                event(testFile, "cpuStart", queue, currentProcess, t, "")
+                event("cpuStart", queue, currentProcess, t, "")
             currentProcess.startTime = t
             contextSwitchIn = False
             contextSwitchInTime = -1
             if(len(queue) > 0):
                 if((queue[0].tau - queue[0].timeElapsed < currentProcess.tau - currentProcess.timeElapsed) or (queue[0].tau - queue[0].timeElapsed == currentProcess.tau - currentProcess.timeElapsed and queue[0].name < currentProcess.name)):
                     if(t<1000):
-                        event(testFile, "preemption", queue, queue[0], t, currentProcess)
+                        event("preemption", queue, queue[0], t, currentProcess)
                     currentProcess.state = 6
                     contextSwitchOut = True
                     contextSwitchOutTime = t
@@ -163,7 +149,7 @@ def main(processes, tCS, alpha):
                     i.state = 3
                     queue.insert(0,i)
                     if(t<1000):
-                        event(testFile, "ioPreempt", queue, i, t, currentProcess)
+                        event("ioPreempt", queue, i, t, currentProcess)
                     currentProcess.currentPrempt = True
                     currentProcess.state = 6
                     contextSwitchOut = True
@@ -179,7 +165,7 @@ def main(processes, tCS, alpha):
                         i.state = 3
                         queue.append(i)
                     if(t<1000):
-                        event(testFile, "ioFinish", queue, i, t, "")
+                        event("ioFinish", queue, i, t, "")
 
 
         for i in processes:
@@ -192,7 +178,7 @@ def main(processes, tCS, alpha):
                     i.state = 3
                     queue.insert(0,i)
                     if(t<1000):
-                        event(testFile, "arrivalPreempt", queue, i, t, currentProcess)
+                        event("arrivalPreempt", queue, i, t, currentProcess)
                     currentProcess.state = 6
                     currentProcess.currentPrempt = True
                     contextSwitchOut = True
@@ -208,7 +194,7 @@ def main(processes, tCS, alpha):
                         i.state = 3
                         queue.append(i)
                     if(t<1000):
-                        event(testFile, "arrival", queue, i, t, "")
+                        event("arrival", queue, i, t, "")
             
         if(currentProcess is None and len(queue) > 0):
             # Start a context switch in
@@ -223,7 +209,6 @@ def main(processes, tCS, alpha):
         t +=1
 
     print("time %dms: Simulator ended for SRT [Q <empty>]\n" % t)
-    testFile.write("time %dms: Simulator ended for SRT [Q <empty>]\n" % t)
 
 
     averageCPUBurstTime = round(burstTimeTotal/float(totalBursts), 3)               # Average burst time for algorithm

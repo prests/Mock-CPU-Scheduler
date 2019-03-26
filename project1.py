@@ -5,9 +5,6 @@ import sys
 import math
 
 #Our algorithms
-import fcfs
-import rr
-import sjf
 import rr
 import sjf
 import srt
@@ -102,7 +99,7 @@ def main(seed, lambdaED, upperBound, n, tCS, alpha, timeSlice, rrBeginning):
     processes = resetProcesses(processes, lambdaED)                                                                                     #Reset process information inbetween algorithms
     
     printProcesses(processes)                                                                                                           #Print all the processes
-    avgCPUBurstTime, avgWaitTime, avgTurnTime, contextSwitchTotal = fcfs.main(processes, tCS)                                           #First Come First Serve
+    avgCPUBurstTime, avgWaitTime, avgTurnTime, contextSwitchTotal, preemptionsTotal = rr.main(processes, False, math.inf, tCS)                                           #First Come First Serve
     calculateAverage(outFile, "FCFS", avgCPUBurstTime, avgWaitTime, avgTurnTime, contextSwitchTotal, 0)                                 #Prints average for algorithm (wait time, turnaround time, ect.)
     processes = resetProcesses(processes, lambdaED)                                                                                     #Reset process information inbetween algorithms
     
