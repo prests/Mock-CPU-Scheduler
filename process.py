@@ -15,6 +15,7 @@
         3 - ready
         4 - blocked
         5 - Done
+        6 - Switching
 '''
 class Process(object):
     def __init__(self, arrive, status, cpuBurstNumber, cpuBurstTimes, newName, Tau):
