@@ -134,7 +134,7 @@ def main(processes, tCS, alpha):
                         waitTimeTotal += currentProcess.waitTime                                        # Add wait time to total
                         currentProcess.waitTime = 0                                                     # Reset burst wait time
                         
-                        turnaroundTimeTotal += (t-currentProcess.turnaroundStart) + tCS                 # Add turnaround time to total
+                        turnaroundTimeTotal += (t-currentProcess.turnaroundStart) + tCS/2                 # Add turnaround time to total
                         currentProcess.turnaroundStart = -1                                             # Reset burst turnaround time
                         
                         event("terminated", queue, currentProcess, t)
@@ -158,7 +158,7 @@ def main(processes, tCS, alpha):
                         waitTimeTotal += currentProcess.waitTime                                        # Add wait time to total
                         currentProcess.waitTime = 0                                                     # Reset burst wait time
                         
-                        turnaroundTimeTotal += (t-currentProcess.turnaroundStart) + tCS                 # Add turnaround time to total
+                        turnaroundTimeTotal += (t-currentProcess.turnaroundStart) + tCS/2                 # Add turnaround time to total
                         currentProcess.turnaroundStart = -1                                             # Reset burst turnaround time
                         
                         if(t<1000):

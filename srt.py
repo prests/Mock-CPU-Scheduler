@@ -159,7 +159,7 @@ def main(processes, tCS, alpha):
                         waitTimeTotal += currentProcess.waitTime                                                                                # Add wait time to average
                         currentProcess.waitTime = 0                                                                                             # Reset process wait time
                         
-                        turnaroundTimeTotal += (t-currentProcess.turnaroundStart) + tCS                                                         # Add turnaround time to average
+                        turnaroundTimeTotal += (t-currentProcess.turnaroundStart) + tCS/2                                                         # Add turnaround time to average
                         currentProcess.turnaroundStart = -1                                                                                     # Reset burst turnaround time start
                         
                         event("terminated", queue, currentProcess, t, "")                                                                       
@@ -182,7 +182,7 @@ def main(processes, tCS, alpha):
                         waitTimeTotal += currentProcess.waitTime                                                                                # Add wait time to average
                         currentProcess.waitTime = 0                                                                                             # Reset process wait time
                         
-                        turnaroundTimeTotal += (t-currentProcess.turnaroundStart) + tCS                                                         # Add turnaround time to average
+                        turnaroundTimeTotal += (t-currentProcess.turnaroundStart) + tCS/2                                                         # Add turnaround time to average
                         currentProcess.turnaroundStart = -1                                                                                     # Reset burst turnaround time start
                         
                         if(t<1000):

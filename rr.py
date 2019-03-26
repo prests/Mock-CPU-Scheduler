@@ -131,7 +131,7 @@ def main(processes, rrBeginning, timeSlice, tCS):
                         waitTimeTotal += currentProcess.waitTime                                        # Add wait time to total
                         currentProcess.waitTime = 0                                                     # Reset process wait time
                         
-                        turnaroundTimeTotal += (t-currentProcess.turnaroundStart) + tCS                 # Add turnaround time to total
+                        turnaroundTimeTotal += (t-currentProcess.turnaroundStart) + tCS/2                 # Add turnaround time to total
                         currentProcess.turnaroundStart = -1                                             # Reset process turnaround start time
                         
                         event("terminated", queue, currentProcess, t)
@@ -153,7 +153,7 @@ def main(processes, rrBeginning, timeSlice, tCS):
                         waitTimeTotal += currentProcess.waitTime                                        # Add wait time to total
                         currentProcess.waitTime = 0                                                     # Reset process wait time
                         
-                        turnaroundTimeTotal += (t-currentProcess.turnaroundStart) + tCS                 # Add turnaround time to total
+                        turnaroundTimeTotal += (t-currentProcess.turnaroundStart) + tCS/2                 # Add turnaround time to total
                         currentProcess.turnaroundStart = -1                                             # Reset process turnaround start time
                         
                         if(t<1000):
