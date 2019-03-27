@@ -89,6 +89,10 @@ def main(processes, rrBeginning, timeSlice, tCS):
             if(currentProcess.state == 6): #CPU burst done block on I/O
                 currentProcess.state = 4
                 currentProcess.startTime = t
+                turnaroundTimeTotal += (t - currentProcess.turnaroundStart)
+                currentProcess.turnaroundStart = -1
+            if(currentProcess.state == 5):
+                turnaroundTimeTotal += (t - currentProcess.turnaroundStart)
             currentProcess = None
             contextSwitchOut = False
             contextSwitchOutTime = -1
@@ -100,6 +104,7 @@ def main(processes, rrBeginning, timeSlice, tCS):
                 currentProcess.remainingTime = 0
                 currentProcess.timeElapsed = 0
                 currentProcess.burstComplete += 1
+                burstTimeTotal += currentProcess.cpuBurstTimes[currentProcess.completed]
                 currentProcess.completed += 1
                 currentProcess.currentPrempt = False
 
@@ -147,6 +152,8 @@ def main(processes, rrBeginning, timeSlice, tCS):
             if(i.state == 4 and (t == i.startTime + i.cpuBurstTimes[i.completed]- int(tCS/2))):
                 i.completed += 1
                 i.state = 3
+                if(i.turnaroundStart == -1):
+                    i.turnaroundStart = t
                 if(rrBeginning == False):
                     queue.append(i)
                 else:
@@ -177,6 +184,8 @@ def main(processes, rrBeginning, timeSlice, tCS):
             currentProcess.state = 6
             contextSwitchIn = True
             contextSwitchInTime = t
+            if(i.turnaroundStart == -1):
+                i.turnaroundStart = t
 
         if(currentProcess is not None and currentProcess.state == 2):
             currentProcess.timeElapsed += 1

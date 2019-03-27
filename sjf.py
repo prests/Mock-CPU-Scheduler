@@ -158,8 +158,6 @@ def main(processes, tCS, alpha):
                     Process Arrival
                 '''
                 #arrival
-                if(i.turnaroundStart == -1):
-                    i.turnaroundStart = t
                 for j in range(len(queue)):
                     if((i.tau - i.timeElapsed < queue[j].tau - queue[j].timeElapsed) or (i.tau - i.timeElapsed == queue[j].tau - queue[j].timeElapsed and i.name < queue[j].name)):
                         i.state = 3
@@ -177,6 +175,8 @@ def main(processes, tCS, alpha):
             currentProcess.state = 6
             contextSwitchIn = True
             contextSwitchInTime = t
+            if(i.turnaroundStart == -1):
+                i.turnaroundStart = t
 
         if(currentProcess is not None and currentProcess.state == 2):
             currentProcess.timeElapsed += 1

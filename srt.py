@@ -93,7 +93,7 @@ def main(processes, tCS, alpha):
                 currentProcess.startTime = t
                 turnaroundTimeTotal += (t - currentProcess.turnaroundStart)
                 currentProcess.turnaroundStart = -1
-            if(currentProcess.state == 5):
+            elif(currentProcess.state == 5):
                 turnaroundTimeTotal += (t - currentProcess.turnaroundStart)
                 currentProcess.turnaroundStart = -1
             currentProcess = None
@@ -220,6 +220,7 @@ def main(processes, tCS, alpha):
             currentProcess.state = 6
             contextSwitchIn = True
             contextSwitchInTime = t
+            
 
         if(currentProcess is not None and currentProcess.state == 2):
             currentProcess.timeElapsed += 1
