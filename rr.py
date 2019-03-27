@@ -127,6 +127,7 @@ def main(processes, rrBeginning, timeSlice, tCS):
                     currentProcess.currentPrempt = True
                     contextSwitchOut = True
                     contextSwitchOutTime = t
+                    preemptionTotal += 1
             
         if(contextSwitchIn and (t == contextSwitchInTime + tCS/2)):
             # End context switch in CPU start
@@ -136,6 +137,7 @@ def main(processes, rrBeginning, timeSlice, tCS):
             currentProcess.startTime = t
             contextSwitchIn = False
             contextSwitchInTime = -1
+            contextSwitchTotal += 1
 
 
         for i in processes:
