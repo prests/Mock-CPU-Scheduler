@@ -82,6 +82,10 @@ def main(processes, tCS, alpha):
             if(currentProcess.state == 6): #CPU burst done block on I/O
                 currentProcess.state = 4
                 currentProcess.startTime = t
+                turnaroundTimeTotal += (t - currentProcess.turnaroundStart)
+                currentProcess.turnaroundStart = -1
+            if(currentProcess.state == 5):
+                turnaroundTimeTotal += (t - currentProcess.turnaroundStart)
             currentProcess = None
             contextSwitchOut = False
             contextSwitchOutTime = -1
@@ -92,9 +96,14 @@ def main(processes, tCS, alpha):
                 contextSwitchOutTime = t
                 currentProcess.remainingTime = 0
                 currentProcess.timeElapsed = 0
+                burstTimeTotal += currentProcess.cpuBurstTimes[currentProcess.completed]
                 currentProcess.burstComplete += 1
                 currentProcess.completed += 1
                 currentProcess.currentPrempt = False
+
+                waitTimeTotal += currentProcess.waitTime
+                currentProcess.waitTime = 0
+
                 if(currentProcess.burstComplete == currentProcess.cpuBurstNum): 
                     event("terminated", queue, currentProcess, t, "")
                     #Process is done
@@ -122,11 +131,14 @@ def main(processes, tCS, alpha):
             currentProcess.startTime = t
             contextSwitchIn = False
             contextSwitchInTime = -1
+            contextSwitchTotal += 1
 
 
         for i in processes:
             if(i.state == 4 and (t == i.startTime + i.cpuBurstTimes[i.completed]- int(tCS/2))):
                 i.completed += 1
+                if(i.turnaroundStart == -1):
+                    i.turnaroundStart = t
                 #I/O finish
                 for j in range(len(queue)):
                     if((i.tau - i.timeElapsed < queue[j].tau - queue[j].timeElapsed) or (i.tau - i.timeElapsed == queue[j].tau - queue[j].timeElapsed and i.name < queue[j].name)):
@@ -146,6 +158,8 @@ def main(processes, tCS, alpha):
                     Process Arrival
                 '''
                 #arrival
+                if(i.turnaroundStart == -1):
+                    i.turnaroundStart = t
                 for j in range(len(queue)):
                     if((i.tau - i.timeElapsed < queue[j].tau - queue[j].timeElapsed) or (i.tau - i.timeElapsed == queue[j].tau - queue[j].timeElapsed and i.name < queue[j].name)):
                         i.state = 3
@@ -167,6 +181,10 @@ def main(processes, tCS, alpha):
         if(currentProcess is not None and currentProcess.state == 2):
             currentProcess.timeElapsed += 1
         
+        for i in processes:
+            if(i.state == 3):
+                i.waitTime += 1
+
         t +=1
 
     print("time %dms: Simulator ended for SJF [Q <empty>]\n" % t)

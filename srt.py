@@ -91,6 +91,11 @@ def main(processes, tCS, alpha):
             elif(currentProcess.state == 6): #CPU burst done block on I/O
                 currentProcess.state = 4
                 currentProcess.startTime = t
+                turnaroundTimeTotal += (t - currentProcess.turnaroundStart)
+                currentProcess.turnaroundStart = -1
+            if(currentProcess.state == 5):
+                turnaroundTimeTotal += (t - currentProcess.turnaroundStart)
+                currentProcess.turnaroundStart = -1
             currentProcess = None
             contextSwitchOut = False
             contextSwitchOutTime = -1
@@ -101,9 +106,14 @@ def main(processes, tCS, alpha):
                 contextSwitchOutTime = t
                 currentProcess.remainingTime = 0
                 currentProcess.timeElapsed = 0
+                burstTimeTotal += currentProcess.cpuBurstTimes[currentProcess.completed]
                 currentProcess.burstComplete += 1
                 currentProcess.completed += 1
                 currentProcess.currentPrempt = False
+
+                waitTimeTotal += currentProcess.waitTime
+                currentProcess.waitTime = 0
+
                 if(currentProcess.burstComplete == currentProcess.cpuBurstNum): 
                     event("terminated", queue, currentProcess, t, "")
                     #Process is done
@@ -139,11 +149,15 @@ def main(processes, tCS, alpha):
                     contextSwitchOut = True
                     contextSwitchOutTime = t
                     currentProcess.currentPrempt = True
+                    preemptionTotal += 1
+            contextSwitchTotal += 1
 
 
         for i in processes:
             if(i.state == 4 and (t == i.startTime + i.cpuBurstTimes[i.completed]- int(tCS/2))):
                 i.completed += 1
+                if(i.turnaroundStart == -1):
+                    i.turnaroundStart = t
                 if(currentProcess is not None and currentProcess.state == 2 and (i.tau - i.timeElapsed < currentProcess.tau - currentProcess.timeElapsed)):# or (i.tau - i.timeElapsed == currentProcess.tau - currentProcess.timeElapsed and i.name < currentProcess.name))):
                     #Preemptive I/O finish
                     i.state = 3
@@ -154,6 +168,7 @@ def main(processes, tCS, alpha):
                     currentProcess.state = 6
                     contextSwitchOut = True
                     contextSwitchOutTime = t 
+                    preemptionTotal += 1
                 else:
                     #I/O finish
                     for j in range(len(queue)):
@@ -173,6 +188,8 @@ def main(processes, tCS, alpha):
                 '''
                     Process Arrival
                 '''
+                if(i.turnaroundStart == -1):
+                    i.turnaroundStart = t
                 if(currentProcess is not None and currentProcess.state == 2 and (i.tau - i.timeElapsed < currentProcess.tau - currentProcess.timeElapsed or (i.tau - i.timeElapsed == currentProcess.tau - currentProcess.timeElapsed and i.name < currentProcess.name))):
                     #Preemptive arrival
                     i.state = 3
@@ -183,6 +200,7 @@ def main(processes, tCS, alpha):
                     currentProcess.currentPrempt = True
                     contextSwitchOut = True
                     contextSwitchOutTime = t
+                    preemptionTotal += 1
                 else:
                     #arrival
                     for j in range(len(queue)):
@@ -205,6 +223,10 @@ def main(processes, tCS, alpha):
 
         if(currentProcess is not None and currentProcess.state == 2):
             currentProcess.timeElapsed += 1
+        
+        for i in processes:
+            if(i.state == 3):
+                i.waitTime += 1
         
         t +=1
 
