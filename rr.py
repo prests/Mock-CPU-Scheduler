@@ -102,6 +102,9 @@ def main(processes, rrBeginning, timeSlice, tCS):
                 currentProcess.burstComplete += 1
                 currentProcess.completed += 1
                 currentProcess.currentPrempt = False
+
+                waitTimeTotal += currentProcess.waitTime
+                currentProcess.waitTime = 0
                 if(currentProcess.burstComplete == currentProcess.cpuBurstNum): 
                     event("terminated", queue, currentProcess, t)
                     #Process is done
@@ -177,6 +180,10 @@ def main(processes, rrBeginning, timeSlice, tCS):
 
         if(currentProcess is not None and currentProcess.state == 2):
             currentProcess.timeElapsed += 1
+
+        for i in processes:
+            if(i.state == 3):
+                i.waitTime += 1
         
         t +=1
 
