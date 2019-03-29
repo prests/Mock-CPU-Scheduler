@@ -20,3 +20,7 @@ python3 main.py s lamda uB n tCS alpha tS rr
 * alpha - Constant used in exponential averaging
 * tS - Time slice for a process in Round Robin algorithm
 * rr - [OPTIONAL] Determine if processes are added to beginning or end of queue on arrivale (BEGINNING/END with END being default)
+
+## Issues with project
+
+The turnaround times are wrong and will need to be fixed for project2 potentially.
